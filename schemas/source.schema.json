@@ -6,9 +6,15 @@
   "required": [
     "source_id",
     "source_type",
+    "system",
     "title",
     "origin_ref",
-    "created_at"
+    "retrieved_at",
+    "retrieval_method",
+    "retrieval_scope",
+    "adapter",
+    "trust_boundary",
+    "metadata"
   ],
   "additionalProperties": false,
   "properties": {
@@ -26,6 +32,10 @@
         "other"
       ]
     },
+    "system": {
+      "type": "string",
+      "minLength": 1
+    },
     "title": {
       "type": "string",
       "minLength": 1
@@ -34,9 +44,69 @@
       "type": "string",
       "minLength": 1
     },
-    "created_at": {
+    "retrieved_at": {
       "type": "string",
       "format": "date-time"
+    },
+    "retrieval_method": {
+      "type": "string",
+      "minLength": 1
+    },
+    "retrieval_scope": {
+      "type": "string",
+      "minLength": 1
+    },
+    "adapter": {
+      "type": "object",
+      "required": [
+        "name",
+        "version"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "trust_boundary": {
+      "type": "object",
+      "required": [
+        "level",
+        "labels",
+        "exportable",
+        "retention",
+        "handling"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "level": {
+          "type": "string",
+          "minLength": 1
+        },
+        "labels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "exportable": {
+          "type": "boolean"
+        },
+        "retention": {
+          "type": "string",
+          "minLength": 1
+        },
+        "handling": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
     },
     "metadata": {
       "type": "object"

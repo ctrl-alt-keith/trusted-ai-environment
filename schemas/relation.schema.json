@@ -5,17 +5,63 @@
   "type": "object",
   "required": [
     "relation_id",
+    "from",
+    "to",
     "relation_type",
-    "from_type",
-    "from_id",
-    "to_type",
-    "to_id"
+    "observed_in",
+    "source_observed",
+    "confidence",
+    "metadata"
   ],
   "additionalProperties": false,
   "properties": {
     "relation_id": {
       "type": "string",
       "pattern": "^rel-[a-z0-9-]+$"
+    },
+    "from": {
+      "type": "object",
+      "required": [
+        "type",
+        "id"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "source",
+            "item",
+            "chunk"
+          ]
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "to": {
+      "type": "object",
+      "required": [
+        "type",
+        "id"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "source",
+            "item",
+            "chunk"
+          ]
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
     },
     "relation_type": {
       "type": "string",
@@ -28,29 +74,38 @@
         "resolves"
       ]
     },
-    "from_type": {
+    "observed_in": {
+      "type": "object",
+      "required": [
+        "type",
+        "id"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "source",
+            "item",
+            "chunk"
+          ]
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "source_observed": {
+      "type": "boolean"
+    },
+    "confidence": {
       "type": "string",
       "enum": [
         "source",
-        "item",
-        "chunk"
+        "extracted",
+        "synthetic"
       ]
-    },
-    "from_id": {
-      "type": "string",
-      "minLength": 1
-    },
-    "to_type": {
-      "type": "string",
-      "enum": [
-        "source",
-        "item",
-        "chunk"
-      ]
-    },
-    "to_id": {
-      "type": "string",
-      "minLength": 1
     },
     "metadata": {
       "type": "object"

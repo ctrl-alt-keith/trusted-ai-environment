@@ -81,8 +81,10 @@ def schema_type_name(value: Any) -> str:
     return type(value).__name__
 
 
-def check_type(value: Any, expected: str) -> bool:
+def check_type(value: Any, expected: str | list[str]) -> bool:
     actual = schema_type_name(value)
+    if isinstance(expected, list):
+        return any(check_type(value, item) for item in expected)
     if expected == "number":
         return actual in {"integer", "number"}
     return actual == expected
@@ -158,35 +160,123 @@ def require_files(bundle_dir: Path) -> list[str]:
     return errors
 
 
-def validate_references(
+def find_duplicate_ids(rows: list[dict[str, Any]], key: str, label: str) -> list[str]:
+    seen: set[str] = set()
+    duplicates: list[str] = []
+    for row in rows:
+        value = row.get(key)
+        if not isinstance(value, str):
+            continue
+        if value in seen:
+            duplicates.append(f"{label}: duplicate {key}: {value}")
+        seen.add(value)
+    return duplicates
+
+
+def validate_bundle_metadata(
+    bundle: dict[str, Any],
     sources: list[dict[str, Any]],
     items: list[dict[str, Any]],
     chunks: list[dict[str, Any]],
     relations: list[dict[str, Any]],
 ) -> list[str]:
     errors: list[str] = []
-    source_ids = {row["source_id"] for row in sources}
-    item_ids = {row["item_id"] for row in items}
-    chunk_ids = {row["chunk_id"] for row in chunks}
+    contents = bundle.get("contents", {})
+    if isinstance(contents, dict):
+        expected_counts = {
+            "source_count": len(sources),
+            "item_count": len(items),
+            "chunk_count": len(chunks),
+            "relation_count": len(relations),
+        }
+        for key, expected in expected_counts.items():
+            if contents.get(key) != expected:
+                errors.append(f"bundle.contents.{key} must be {expected}")
+
+    files = bundle.get("files", {})
+    if isinstance(files, dict):
+        expected_files = {
+            "sources": "sources.jsonl",
+            "items": "items.jsonl",
+            "chunks": "chunks.jsonl",
+            "relations": "relations.jsonl",
+            "checksums": "checksums.sha256",
+        }
+        for key, expected in expected_files.items():
+            if files.get(key) != expected:
+                errors.append(f"bundle.files.{key} must be {expected}")
+
+    return errors
+
+
+def endpoint_errors(
+    relation_id: str,
+    endpoint_name: str,
+    endpoint: Any,
+    ids_by_type: dict[str, set[str]],
+) -> list[str]:
+    if not isinstance(endpoint, dict):
+        return [f"{relation_id}: {endpoint_name} endpoint must be an object"]
+    endpoint_type = endpoint.get("type")
+    endpoint_id = endpoint.get("id")
+    if endpoint_type not in ids_by_type:
+        return [f"{relation_id}: {endpoint_name}.type is invalid: {endpoint_type!r}"]
+    if endpoint_id not in ids_by_type[endpoint_type]:
+        return [f"{relation_id}: {endpoint_name}.id does not exist: {endpoint_id}"]
+    return []
+
+
+def validate_references(
+    bundle: dict[str, Any],
+    sources: list[dict[str, Any]],
+    items: list[dict[str, Any]],
+    chunks: list[dict[str, Any]],
+    relations: list[dict[str, Any]],
+) -> list[str]:
+    errors: list[str] = []
+    errors.extend(find_duplicate_ids(sources, "source_id", "sources.jsonl"))
+    errors.extend(find_duplicate_ids(items, "item_id", "items.jsonl"))
+    errors.extend(find_duplicate_ids(chunks, "chunk_id", "chunks.jsonl"))
+    errors.extend(find_duplicate_ids(relations, "relation_id", "relations.jsonl"))
+
+    source_ids = {row["source_id"] for row in sources if isinstance(row.get("source_id"), str)}
+    item_ids = {row["item_id"] for row in items if isinstance(row.get("item_id"), str)}
+    chunk_ids = {row["chunk_id"] for row in chunks if isinstance(row.get("chunk_id"), str)}
+    items_by_id = {
+        row["item_id"]: row for row in items if isinstance(row.get("item_id"), str)
+    }
     ids_by_type = {"source": source_ids, "item": item_ids, "chunk": chunk_ids}
+    bundle_id = bundle.get("bundle_id")
 
     for row in items:
-        if row["source_id"] not in source_ids:
-            errors.append(f"{row['item_id']}: source_id does not exist: {row['source_id']}")
+        item_id = row.get("item_id", "<unknown item>")
+        source_id = row.get("source_id")
+        if source_id not in source_ids:
+            errors.append(f"{item_id}: source_id does not exist: {source_id}")
+        if "sensitivity" not in row:
+            errors.append(f"{item_id}: missing sensitivity")
 
     for row in chunks:
-        if row["item_id"] not in item_ids:
-            errors.append(f"{row['chunk_id']}: item_id does not exist: {row['item_id']}")
-        if row["source_id"] not in source_ids:
-            errors.append(f"{row['chunk_id']}: source_id does not exist: {row['source_id']}")
+        chunk_id = row.get("chunk_id", "<unknown chunk>")
+        item_id = row.get("item_id")
+        source_id = row.get("source_id")
+        if row.get("bundle_id") != bundle_id:
+            errors.append(f"{chunk_id}: bundle_id must match bundle.bundle_id")
+        if item_id not in item_ids:
+            errors.append(f"{chunk_id}: item_id does not exist: {item_id}")
+        if source_id not in source_ids:
+            errors.append(f"{chunk_id}: source_id does not exist: {source_id}")
+        parent_item = items_by_id.get(item_id)
+        if parent_item and source_id != parent_item.get("source_id"):
+            errors.append(f"{chunk_id}: source_id must match parent item.source_id")
+        if "sensitivity" not in row:
+            errors.append(f"{chunk_id}: missing sensitivity")
 
     for row in relations:
-        from_ids = ids_by_type[row["from_type"]]
-        to_ids = ids_by_type[row["to_type"]]
-        if row["from_id"] not in from_ids:
-            errors.append(f"{row['relation_id']}: from_id does not exist: {row['from_id']}")
-        if row["to_id"] not in to_ids:
-            errors.append(f"{row['relation_id']}: to_id does not exist: {row['to_id']}")
+        relation_id = row.get("relation_id", "<unknown relation>")
+        errors.extend(endpoint_errors(relation_id, "from", row.get("from"), ids_by_type))
+        errors.extend(endpoint_errors(relation_id, "to", row.get("to"), ids_by_type))
+        errors.extend(endpoint_errors(relation_id, "observed_in", row.get("observed_in"), ids_by_type))
 
     return errors
 
@@ -222,7 +312,17 @@ def validate_bundle(bundle_dir: Path) -> list[str]:
             errors.extend(validate_with_schema(schema_name, row, f"{filename}:{index}"))
 
     errors.extend(
+        validate_bundle_metadata(
+            bundle,
+            rows_by_file["sources.jsonl"],
+            rows_by_file["items.jsonl"],
+            rows_by_file["chunks.jsonl"],
+            rows_by_file["relations.jsonl"],
+        )
+    )
+    errors.extend(
         validate_references(
+            bundle,
             rows_by_file["sources.jsonl"],
             rows_by_file["items.jsonl"],
             rows_by_file["chunks.jsonl"],
@@ -257,4 +357,3 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

@@ -58,8 +58,12 @@ def build_report(bundle_dir: Path) -> str:
 
     lines.extend(["", "## Evidence Highlights", ""])
     for relation in relations:
-        from_item = items_index.get(relation["from_id"])
-        to_item = items_index.get(relation["to_id"])
+        from_endpoint = relation["from"]
+        to_endpoint = relation["to"]
+        from_item = (
+            items_index.get(from_endpoint["id"]) if from_endpoint["type"] == "item" else None
+        )
+        to_item = items_index.get(to_endpoint["id"]) if to_endpoint["type"] == "item" else None
         if from_item and to_item:
             lines.append(
                 f"- `{relation['relation_type']}`: {from_item['title']} -> {to_item['title']}"
@@ -99,4 +103,3 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

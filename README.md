@@ -43,8 +43,18 @@ The conceptual evidence model is:
 source -> item -> chunk
 ```
 
-Findings and synthesis reports are outputs, not evidence, and are not stored in
-the evidence bundle contract.
+`bundle.json` describes the point-in-time package, including who created it,
+why it exists, its trust profile, expected file names, and record counts.
+Sources carry provenance and trust-boundary metadata. Items carry source-native
+evidence metadata, time, actors, content references, transforms, and
+sensitivity. Chunks are the primary arc input, so each chunk includes enough
+title, time, location, chunker, hash, and sensitivity metadata for downstream
+workers to consume it without constant joins.
+
+Relations are source-observed or synthetic-observed links between existing
+sources, items, or chunks. Findings and synthesis reports are outputs, not
+evidence, and are not stored in the evidence bundle contract. Future findings
+should cite chunks.
 
 ## Local Commands
 
@@ -61,9 +71,8 @@ make check
 ## Repository Contents
 
 - `docs/` describes the architecture, bundle contract, and trust boundary.
-- `schemas/` contains the MVP JSON Schemas.
+- `schemas/` contains the hardened Stage 1 JSON Schemas.
 - `examples/fake-corpus/bundle/` contains deterministic synthetic evidence.
 - `src/trusted_ai_environment/` contains local generation, validation,
   checksum, and synthesis-stub commands.
 - `tests/` contains dependency-free unit tests.
-

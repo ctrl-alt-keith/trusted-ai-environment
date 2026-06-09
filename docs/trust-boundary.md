@@ -25,8 +25,10 @@ Not allowed in this repository:
 - generated summaries derived from real work data
 - work-specific overlays, configs, secrets, reports, or outputs
 
-Generated reports from real data are work-derived artifacts. They must stay
-inside the approved boundary for that data and must not be committed here.
+Generated findings and reports from real data are work-derived artifacts. They
+must stay inside the approved boundary for that data and must not be committed
+here. Even when a public-safe report format exists, real-data report content is
+outside this repository's trust boundary.
 
 ## MVP Network Boundary
 
@@ -45,4 +47,3 @@ Future LKE deployment work should preserve a private operator model:
 
 This is future work only. This repository does not provision LKE, networks,
 model serving, storage, or access controls in Stage 1.
-

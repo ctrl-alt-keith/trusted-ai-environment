@@ -4,21 +4,48 @@
   "title": "Evidence bundle metadata",
   "type": "object",
   "required": [
-    "bundle_id",
     "schema_version",
+    "bundle_id",
+    "created_at",
+    "created_by",
     "title",
     "description",
-    "created_at"
+    "purpose",
+    "trust_profile",
+    "contents",
+    "files"
   ],
   "additionalProperties": false,
   "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "0.1.0"
+    },
     "bundle_id": {
       "type": "string",
       "pattern": "^[a-z0-9][a-z0-9._-]*$"
     },
-    "schema_version": {
+    "created_at": {
       "type": "string",
-      "const": "0.1.0"
+      "format": "date-time"
+    },
+    "created_by": {
+      "type": "object",
+      "required": [
+        "name",
+        "version"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
     },
     "title": {
       "type": "string",
@@ -28,9 +55,100 @@
       "type": "string",
       "minLength": 1
     },
-    "created_at": {
+    "purpose": {
       "type": "string",
-      "format": "date-time"
+      "minLength": 1
+    },
+    "trust_profile": {
+      "type": "object",
+      "required": [
+        "default_level",
+        "allowed_processing",
+        "external_export_allowed",
+        "retention"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "default_level": {
+          "type": "string",
+          "minLength": 1
+        },
+        "allowed_processing": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "external_export_allowed": {
+          "type": "boolean"
+        },
+        "retention": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "contents": {
+      "type": "object",
+      "required": [
+        "source_count",
+        "item_count",
+        "chunk_count",
+        "relation_count"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "source_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "item_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "chunk_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "relation_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "files": {
+      "type": "object",
+      "required": [
+        "sources",
+        "items",
+        "chunks",
+        "relations",
+        "checksums"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "sources": {
+          "type": "string",
+          "const": "sources.jsonl"
+        },
+        "items": {
+          "type": "string",
+          "const": "items.jsonl"
+        },
+        "chunks": {
+          "type": "string",
+          "const": "chunks.jsonl"
+        },
+        "relations": {
+          "type": "string",
+          "const": "relations.jsonl"
+        },
+        "checksums": {
+          "type": "string",
+          "const": "checksums.sha256"
+        }
+      }
     }
   }
 }

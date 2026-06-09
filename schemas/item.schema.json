@@ -9,7 +9,13 @@
     "kind",
     "title",
     "body",
-    "created_at"
+    "source_ref",
+    "time",
+    "actors",
+    "content_ref",
+    "transforms",
+    "sensitivity",
+    "metadata"
   ],
   "additionalProperties": false,
   "properties": {
@@ -42,9 +48,126 @@
       "type": "string",
       "minLength": 1
     },
-    "created_at": {
-      "type": "string",
-      "format": "date-time"
+    "source_ref": {
+      "type": "object",
+      "required": [
+        "system",
+        "locator"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "system": {
+          "type": "string",
+          "minLength": 1
+        },
+        "locator": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "time": {
+      "type": "object",
+      "required": [
+        "created_at",
+        "updated_at",
+        "observed_at",
+        "time_range"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "observed_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "time_range": {
+          "type": [
+            "object",
+            "null"
+          ]
+        }
+      }
+    },
+    "actors": {
+      "type": "object"
+    },
+    "content_ref": {
+      "type": "object",
+      "required": [
+        "path",
+        "mime_type",
+        "sha256",
+        "size_bytes"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "mime_type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "transforms": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "sensitivity": {
+      "type": "object",
+      "required": [
+        "level",
+        "labels",
+        "exportable",
+        "retention",
+        "handling"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "level": {
+          "type": "string",
+          "minLength": 1
+        },
+        "labels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "exportable": {
+          "type": "boolean"
+        },
+        "retention": {
+          "type": "string",
+          "minLength": 1
+        },
+        "handling": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
     },
     "metadata": {
       "type": "object"
