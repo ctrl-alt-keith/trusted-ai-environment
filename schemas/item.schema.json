@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/schemas/trusted-ai-environment/item.schema.json",
+  "title": "Evidence item",
+  "type": "object",
+  "required": [
+    "item_id",
+    "source_id",
+    "kind",
+    "title",
+    "body",
+    "created_at"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "item_id": {
+      "type": "string",
+      "pattern": "^item-[a-z0-9-]+$"
+    },
+    "source_id": {
+      "type": "string",
+      "pattern": "^src-[a-z0-9-]+$"
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "document",
+        "event",
+        "issue",
+        "change",
+        "incident",
+        "postmortem",
+        "aggregate",
+        "other"
+      ]
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "body": {
+      "type": "string",
+      "minLength": 1
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "metadata": {
+      "type": "object"
+    }
+  }
+}
+

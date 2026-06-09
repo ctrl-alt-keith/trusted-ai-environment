@@ -1,0 +1,3 @@
+{"from_id": "item-stale-runbook", "from_type": "item", "metadata": {"reason": "both describe restart-before-clear sequence"}, "relation_id": "rel-runbook-overlaps-guide", "relation_type": "overlaps", "to_id": "item-overlap-guide", "to_type": "item"}
+{"from_id": "item-contradictory-note", "from_type": "item", "metadata": {"reason": "restart prohibition conflicts with restart-first guidance"}, "relation_id": "rel-note-contradicts-runbook", "relation_type": "contradicts", "to_id": "item-stale-runbook", "to_type": "item"}
+{"from_id": "item-change-2001", "from_type": "item", "metadata": {"reason": "change proposes unified wording requested by issue"}, "relation_id": "rel-change-resolves-issue", "relation_type": "resolves", "to_id": "item-issue-1001", "to_type": "item"}

@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/schemas/trusted-ai-environment/relation.schema.json",
+  "title": "Evidence relation",
+  "type": "object",
+  "required": [
+    "relation_id",
+    "relation_type",
+    "from_type",
+    "from_id",
+    "to_type",
+    "to_id"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "relation_id": {
+      "type": "string",
+      "pattern": "^rel-[a-z0-9-]+$"
+    },
+    "relation_type": {
+      "type": "string",
+      "enum": [
+        "overlaps",
+        "contradicts",
+        "references",
+        "supersedes",
+        "relates_to",
+        "resolves"
+      ]
+    },
+    "from_type": {
+      "type": "string",
+      "enum": [
+        "source",
+        "item",
+        "chunk"
+      ]
+    },
+    "from_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "to_type": {
+      "type": "string",
+      "enum": [
+        "source",
+        "item",
+        "chunk"
+      ]
+    },
+    "to_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "metadata": {
+      "type": "object"
+    }
+  }
+}
+

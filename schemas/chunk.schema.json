@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/schemas/trusted-ai-environment/chunk.schema.json",
+  "title": "Evidence chunk",
+  "type": "object",
+  "required": [
+    "chunk_id",
+    "source_id",
+    "item_id",
+    "ordinal",
+    "text"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "chunk_id": {
+      "type": "string",
+      "pattern": "^chunk-[a-z0-9-]+-[0-9]+$"
+    },
+    "source_id": {
+      "type": "string",
+      "pattern": "^src-[a-z0-9-]+$"
+    },
+    "item_id": {
+      "type": "string",
+      "pattern": "^item-[a-z0-9-]+$"
+    },
+    "ordinal": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "text": {
+      "type": "string",
+      "minLength": 1
+    },
+    "char_start": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "char_end": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "metadata": {
+      "type": "object"
+    }
+  }
+}
+
