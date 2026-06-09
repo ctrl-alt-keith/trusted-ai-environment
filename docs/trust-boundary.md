@@ -41,9 +41,8 @@ Future LKE deployment work should preserve a private operator model:
 
 - no public app ingress
 - workload services internal-only
-- initial operator access limited to two approved source IPs:
-  - work Mac egress IP
-  - work Linux VM egress IP
+- initial operator access limited to explicitly approved operator egress
+  sources
 
 This is future work only. This repository does not provision LKE, networks,
 model serving, storage, or access controls in Stage 1.
