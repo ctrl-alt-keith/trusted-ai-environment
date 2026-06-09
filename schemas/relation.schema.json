@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/schemas/trusted-ai-environment/relation.schema.json",
+  "title": "Evidence relation",
+  "type": "object",
+  "required": [
+    "relation_id",
+    "from",
+    "to",
+    "relation_type",
+    "observed_in",
+    "source_observed",
+    "confidence",
+    "metadata"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "relation_id": {
+      "type": "string",
+      "pattern": "^rel-[a-z0-9-]+$"
+    },
+    "from": {
+      "type": "object",
+      "required": [
+        "type",
+        "id"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "source",
+            "item",
+            "chunk"
+          ]
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "to": {
+      "type": "object",
+      "required": [
+        "type",
+        "id"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "source",
+            "item",
+            "chunk"
+          ]
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "relation_type": {
+      "type": "string",
+      "enum": [
+        "overlaps",
+        "contradicts",
+        "references",
+        "supersedes",
+        "relates_to",
+        "resolves"
+      ]
+    },
+    "observed_in": {
+      "type": "object",
+      "required": [
+        "type",
+        "id"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "source",
+            "item",
+            "chunk"
+          ]
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "source_observed": {
+      "type": "boolean"
+    },
+    "confidence": {
+      "type": "string",
+      "enum": [
+        "source",
+        "extracted",
+        "synthetic"
+      ]
+    },
+    "metadata": {
+      "type": "object"
+    }
+  }
+}
+
