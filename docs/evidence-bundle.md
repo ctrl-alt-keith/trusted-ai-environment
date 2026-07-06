@@ -72,6 +72,8 @@ values are `source`, `extracted`, and `synthetic`.
 - Every `chunk.source_id` must exist in `sources.jsonl`.
 - Every `chunk.bundle_id` must match `bundle.bundle_id`.
 - Every chunk's `source_id` must match its parent item's `source_id`.
+- Every item content hash and byte length must match the item body.
+- Every chunk hash and item-body character span must match the chunk text.
 - Every item and chunk must include sensitivity metadata.
 - Every nested relation endpoint must resolve.
 - `checksums.sha256` must match the current bytes of every bundle file except

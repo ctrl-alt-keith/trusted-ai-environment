@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 from datetime import datetime
@@ -39,6 +40,14 @@ SUSPICIOUS_MARKERS = (
 
 class ValidationError(Exception):
     """Raised for bundle validation errors."""
+
+
+def sha256_text(text: str) -> str:
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def byte_len(text: str) -> int:
+    return len(text.encode("utf-8"))
 
 
 def load_json(path: Path) -> Any:
@@ -255,11 +264,19 @@ def validate_references(
             errors.append(f"{item_id}: source_id does not exist: {source_id}")
         if "sensitivity" not in row:
             errors.append(f"{item_id}: missing sensitivity")
+        body = row.get("body")
+        content_ref = row.get("content_ref")
+        if isinstance(body, str) and isinstance(content_ref, dict):
+            if content_ref.get("sha256") != sha256_text(body):
+                errors.append(f"{item_id}: content_ref.sha256 must match body")
+            if content_ref.get("size_bytes") != byte_len(body):
+                errors.append(f"{item_id}: content_ref.size_bytes must match body byte length")
 
     for row in chunks:
         chunk_id = row.get("chunk_id", "<unknown chunk>")
         item_id = row.get("item_id")
         source_id = row.get("source_id")
+        text = row.get("text")
         if row.get("bundle_id") != bundle_id:
             errors.append(f"{chunk_id}: bundle_id must match bundle.bundle_id")
         if item_id not in item_ids:
@@ -269,6 +286,19 @@ def validate_references(
         parent_item = items_by_id.get(item_id)
         if parent_item and source_id != parent_item.get("source_id"):
             errors.append(f"{chunk_id}: source_id must match parent item.source_id")
+        if isinstance(text, str):
+            if row.get("chunk_sha256") != sha256_text(text):
+                errors.append(f"{chunk_id}: chunk_sha256 must match text")
+            location = row.get("location")
+            parent_body = parent_item.get("body") if parent_item else None
+            if isinstance(location, dict) and isinstance(parent_body, str):
+                start = location.get("char_start")
+                end = location.get("char_end")
+                if isinstance(start, int) and isinstance(end, int):
+                    if start < 0 or end < start or end > len(parent_body):
+                        errors.append(f"{chunk_id}: location char span is outside parent item body")
+                    elif parent_body[start:end] != text:
+                        errors.append(f"{chunk_id}: text must match parent item body char span")
         if "sensitivity" not in row:
             errors.append(f"{chunk_id}: missing sensitivity")
 
