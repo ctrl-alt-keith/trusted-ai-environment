@@ -69,6 +69,36 @@ class BundleValidationTests(unittest.TestCase):
                 any("source_id must match parent item.source_id" in error for error in errors)
             )
 
+    def test_item_content_ref_mismatch_is_reported(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            bundle_dir = Path(tmp) / "bundle"
+            create_fake_bundle(bundle_dir)
+            items = load_jsonl(bundle_dir / "items.jsonl")
+            items[0]["body"] = f"{items[0]['body']} Extra synthetic sentence."
+            write_jsonl(bundle_dir / "items.jsonl", items)
+            write_checksums(bundle_dir)
+            errors = validate_bundle(bundle_dir)
+            self.assertIn("item-stale-runbook: content_ref.sha256 must match body", errors)
+            self.assertIn(
+                "item-stale-runbook: content_ref.size_bytes must match body byte length",
+                errors,
+            )
+
+    def test_chunk_hash_and_span_mismatch_are_reported(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            bundle_dir = Path(tmp) / "bundle"
+            create_fake_bundle(bundle_dir)
+            chunks = load_jsonl(bundle_dir / "chunks.jsonl")
+            chunks[0]["text"] = f"{chunks[0]['text']} Extra synthetic sentence."
+            write_jsonl(bundle_dir / "chunks.jsonl", chunks)
+            write_checksums(bundle_dir)
+            errors = validate_bundle(bundle_dir)
+            self.assertIn("chunk-stale-runbook-0: chunk_sha256 must match text", errors)
+            self.assertIn(
+                "chunk-stale-runbook-0: text must match parent item body char span",
+                errors,
+            )
+
     def test_missing_nested_relation_endpoint_is_reported(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             bundle_dir = Path(tmp) / "bundle"
