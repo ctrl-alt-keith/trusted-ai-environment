@@ -78,6 +78,8 @@ values are `source`, `extracted`, and `synthetic`.
 - Every nested relation endpoint must resolve.
 - `checksums.sha256` must match the current bytes of every bundle file except
   itself.
+- Bundle files must not contain internal-looking URLs or suspicious
+  public-safety markers.
 
 ## Supported Item Kinds
 
