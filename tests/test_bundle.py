@@ -129,6 +129,23 @@ class BundleValidationTests(unittest.TestCase):
             errors = validate_bundle(bundle_dir)
             self.assertTrue(any("item_id does not exist" in error for error in errors))
 
+    def test_public_safety_markers_are_reported(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            bundle_dir = Path(tmp) / "bundle"
+            create_fake_bundle(bundle_dir)
+            readme = (bundle_dir / "README.md").read_text(encoding="utf-8")
+            (bundle_dir / "README.md").write_text(
+                f"{readme}\nThis synthetic fixture says Confidential for scanner coverage.\n",
+                encoding="utf-8",
+            )
+            sources = load_jsonl(bundle_dir / "sources.jsonl")
+            sources[0]["origin_ref"] = "https://intranet.example.invalid/fake-corpus/doc"
+            write_jsonl(bundle_dir / "sources.jsonl", sources)
+            write_checksums(bundle_dir)
+            errors = validate_bundle(bundle_dir)
+            self.assertIn("README.md: contains suspicious marker 'confidential'", errors)
+            self.assertIn("sources.jsonl: contains an internal-looking URL", errors)
+
     def test_synthesis_stub_mentions_outputs_not_evidence(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             bundle_dir = Path(tmp) / "bundle"
