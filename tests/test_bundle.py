@@ -110,6 +110,38 @@ class BundleValidationTests(unittest.TestCase):
             errors = validate_bundle(bundle_dir)
             self.assertTrue(any("from.id does not exist" in error for error in errors))
 
+    def test_duplicate_record_ids_are_reported(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            bundle_dir = Path(tmp) / "bundle"
+            create_fake_bundle(bundle_dir)
+            duplicate_cases = [
+                ("sources.jsonl", "source_id", "source_count", "sources.jsonl: duplicate source_id"),
+                ("items.jsonl", "item_id", "item_count", "items.jsonl: duplicate item_id"),
+                ("chunks.jsonl", "chunk_id", "chunk_count", "chunks.jsonl: duplicate chunk_id"),
+                (
+                    "relations.jsonl",
+                    "relation_id",
+                    "relation_count",
+                    "relations.jsonl: duplicate relation_id",
+                ),
+            ]
+            bundle = load_json(bundle_dir / "bundle.json")
+            contents = bundle["contents"]
+            assert isinstance(contents, dict)
+            for filename, _key, count_key, _expected_prefix in duplicate_cases:
+                rows = load_jsonl(bundle_dir / filename)
+                rows.append(dict(rows[0]))
+                write_jsonl(bundle_dir / filename, rows)
+                contents[count_key] = len(rows)
+            write_json(bundle_dir / "bundle.json", bundle)
+            write_checksums(bundle_dir)
+
+            errors = validate_bundle(bundle_dir)
+
+            for filename, key, _count_key, expected_prefix in duplicate_cases:
+                rows = load_jsonl(bundle_dir / filename)
+                self.assertIn(f"{expected_prefix}: {rows[0][key]}", errors)
+
     def test_checksum_mismatch_is_reported(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             bundle_dir = Path(tmp) / "bundle"
