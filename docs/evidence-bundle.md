@@ -65,6 +65,8 @@ values are `source`, `extracted`, and `synthetic`.
 - Every bundle file must exist.
 - `bundle.json` must be valid JSON and match `schemas/bundle.schema.json`.
 - Every JSONL row must parse as a JSON object and match its schema.
+- Every `source_id`, `item_id`, `chunk_id`, and `relation_id` must be unique
+  within its JSONL file.
 - `bundle.contents.*_count` must match actual JSONL row counts.
 - `bundle.files.*` must point to the expected bundle files.
 - Every `item.source_id` must exist in `sources.jsonl`.
