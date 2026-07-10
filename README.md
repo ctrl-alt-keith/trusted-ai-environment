@@ -71,6 +71,7 @@ make check
 ## Repository Contents
 
 - `docs/` describes the architecture, bundle contract, and trust boundary.
+- `docs/product-boundary.md` defines the current Stage 1 product boundary.
 - `schemas/` contains the hardened Stage 1 JSON Schemas.
 - `examples/fake-corpus/bundle/` contains deterministic synthetic evidence.
 - `src/trusted_ai_environment/` contains local generation, validation,
