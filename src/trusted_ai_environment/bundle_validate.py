@@ -15,6 +15,7 @@ from .checksum import CHECKSUMMED_FILES, verify_checksums
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SCHEMA_DIR = REPO_ROOT / "schemas"
 REQUIRED_FILES = (*CHECKSUMMED_FILES, "checksums.sha256")
+EXPECTED_BUNDLE_ENTRIES = set(REQUIRED_FILES)
 JSONL_FILES = {
     "sources.jsonl": "source.schema.json",
     "items.jsonl": "item.schema.json",
@@ -158,14 +159,25 @@ def validate_with_schema(schema_name: str, value: Any, label: str) -> list[str]:
     return validate_schema(schema, value, label)
 
 
-def require_files(bundle_dir: Path) -> list[str]:
+def validate_bundle_layout(bundle_dir: Path) -> list[str]:
     errors: list[str] = []
+    if not bundle_dir.exists():
+        return [f"bundle directory does not exist: {bundle_dir}"]
+    if not bundle_dir.is_dir():
+        return [f"bundle path is not a directory: {bundle_dir}"]
+
     for filename in REQUIRED_FILES:
         path = bundle_dir / filename
         if not path.exists():
             errors.append(f"missing required file: {filename}")
         elif not path.is_file():
             errors.append(f"required path is not a file: {filename}")
+
+    for path in sorted(bundle_dir.iterdir(), key=lambda item: item.name):
+        if path.name in EXPECTED_BUNDLE_ENTRIES:
+            continue
+        label = f"{path.name}/" if path.is_dir() else path.name
+        errors.append(f"unexpected bundle entry: {label}")
     return errors
 
 
@@ -327,7 +339,7 @@ def scan_public_safety(bundle_dir: Path) -> list[str]:
 
 
 def validate_bundle(bundle_dir: Path) -> list[str]:
-    errors = require_files(bundle_dir)
+    errors = validate_bundle_layout(bundle_dir)
     if errors:
         return errors
 

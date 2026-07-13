@@ -34,6 +34,14 @@ class BundleValidationTests(unittest.TestCase):
             create_fake_bundle(bundle_dir)
             self.assertEqual(validate_bundle(bundle_dir), [])
 
+    def test_missing_bundle_directory_is_reported(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            bundle_dir = Path(tmp) / "missing-bundle"
+            self.assertEqual(
+                validate_bundle(bundle_dir),
+                [f"bundle directory does not exist: {bundle_dir}"],
+            )
+
     def test_count_mismatch_is_reported(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             bundle_dir = Path(tmp) / "bundle"
@@ -160,6 +168,18 @@ class BundleValidationTests(unittest.TestCase):
             (bundle_dir / "chunks.jsonl").write_text(text, encoding="utf-8")
             errors = validate_bundle(bundle_dir)
             self.assertTrue(any("item_id does not exist" in error for error in errors))
+
+    def test_unexpected_bundle_entries_are_reported(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            bundle_dir = Path(tmp) / "bundle"
+            create_fake_bundle(bundle_dir)
+            (bundle_dir / "notes.md").write_text("Synthetic sidecar file.\n", encoding="utf-8")
+            (bundle_dir / "attachments").mkdir()
+
+            errors = validate_bundle(bundle_dir)
+
+            self.assertIn("unexpected bundle entry: notes.md", errors)
+            self.assertIn("unexpected bundle entry: attachments/", errors)
 
     def test_public_safety_markers_are_reported(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

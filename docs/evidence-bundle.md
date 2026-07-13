@@ -63,6 +63,8 @@ values are `source`, `extracted`, and `synthetic`.
 ## Required Integrity Rules
 
 - Every bundle file must exist.
+- The bundle root must not contain files or directories outside the declared
+  Stage 1 layout.
 - `bundle.json` must be valid JSON and match `schemas/bundle.schema.json`.
 - Every JSONL row must parse as a JSON object and match its schema.
 - Every `source_id`, `item_id`, `chunk_id`, and `relation_id` must be unique
