@@ -51,6 +51,8 @@ def read_checksum_file(path: Path) -> dict[str, str]:
         checksum, filename = parts
         if len(checksum) != 64 or any(char not in "0123456789abcdef" for char in checksum):
             raise ValueError(f"{path}:{line_number}: invalid sha256 digest")
+        if filename in checksums:
+            raise ValueError(f"{path}:{line_number}: duplicate checksum entry for {filename}")
         checksums[filename] = checksum
     return checksums
 
