@@ -159,6 +159,18 @@ class BundleValidationTests(unittest.TestCase):
             errors = validate_bundle(bundle_dir)
             self.assertIn("checksum mismatch for items.jsonl", errors)
 
+    def test_duplicate_checksum_entries_are_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            bundle_dir = Path(tmp) / "bundle"
+            create_fake_bundle(bundle_dir)
+            checksum_path = bundle_dir / "checksums.sha256"
+            first_entry = checksum_path.read_text(encoding="utf-8").splitlines()[0]
+            with checksum_path.open("a", encoding="utf-8") as handle:
+                handle.write(f"{first_entry}\n")
+
+            with self.assertRaisesRegex(ValueError, "duplicate checksum entry for README.md"):
+                validate_bundle(bundle_dir)
+
     def test_missing_reference_is_reported(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             bundle_dir = Path(tmp) / "bundle"
