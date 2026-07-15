@@ -82,6 +82,9 @@ values are `source`, `extracted`, and `synthetic`.
 - Every nested relation endpoint must resolve.
 - `checksums.sha256` must match the current bytes of every bundle file except
   itself.
+- `checksums.sha256` must contain exactly one `<sha256>  <filename>` entry for
+  each checksummed bundle file, and duplicate or unexpected filenames are
+  invalid.
 - Bundle files must not contain internal-looking URLs or suspicious
   public-safety markers.
 
