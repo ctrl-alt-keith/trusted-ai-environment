@@ -56,6 +56,10 @@ sources, items, or chunks. Findings and synthesis reports are outputs, not
 evidence, and are not stored in the evidence bundle contract. Future findings
 should cite chunks.
 
+`checksums.sha256` is part of the contract, not a convenience artifact. It must
+contain exactly one `<sha256>  <filename>` line for each bundle file except
+itself, with no duplicate or unexpected filenames.
+
 ## Local Commands
 
 ```sh
