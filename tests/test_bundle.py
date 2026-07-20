@@ -171,6 +171,30 @@ class BundleValidationTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "duplicate checksum entry for README.md"):
                 validate_bundle(bundle_dir)
 
+    def test_missing_checksum_entry_is_reported(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            bundle_dir = Path(tmp) / "bundle"
+            create_fake_bundle(bundle_dir)
+            checksum_path = bundle_dir / "checksums.sha256"
+            lines = checksum_path.read_text(encoding="utf-8").splitlines()
+            checksum_path.write_text("\n".join(lines[1:]) + "\n", encoding="utf-8")
+
+            errors = validate_bundle(bundle_dir)
+
+        self.assertIn("checksums.sha256 is missing README.md", errors)
+
+    def test_unexpected_checksum_entry_is_reported(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            bundle_dir = Path(tmp) / "bundle"
+            create_fake_bundle(bundle_dir)
+            checksum_path = bundle_dir / "checksums.sha256"
+            with checksum_path.open("a", encoding="utf-8") as handle:
+                handle.write(f"{'0' * 64}  notes.md\n")
+
+            errors = validate_bundle(bundle_dir)
+
+        self.assertIn("checksums.sha256 has unexpected entry notes.md", errors)
+
     def test_missing_reference_is_reported(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             bundle_dir = Path(tmp) / "bundle"
