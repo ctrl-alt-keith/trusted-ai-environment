@@ -122,9 +122,12 @@ def validate_schema(schema: dict[str, Any], value: Any, path: str) -> list[str]:
             errors.append(f"{path}: does not match pattern {pattern!r}")
         if schema.get("format") == "date-time":
             try:
-                datetime.fromisoformat(value.replace("Z", "+00:00"))
+                parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
             except ValueError:
                 errors.append(f"{path}: invalid date-time")
+            else:
+                if parsed.utcoffset() is None:
+                    errors.append(f"{path}: date-time must include a timezone")
 
     if isinstance(value, int) and "minimum" in schema and value < schema["minimum"]:
         errors.append(f"{path}: must be >= {schema['minimum']}")
