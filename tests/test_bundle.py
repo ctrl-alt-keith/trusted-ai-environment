@@ -53,6 +53,19 @@ class BundleValidationTests(unittest.TestCase):
             errors = validate_bundle(bundle_dir)
             self.assertIn("bundle.contents.chunk_count must be 6", errors)
 
+    def test_naive_bundle_timestamp_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            bundle_dir = Path(tmp) / "bundle"
+            create_fake_bundle(bundle_dir)
+            bundle = load_json(bundle_dir / "bundle.json")
+            bundle["created_at"] = "2026-01-15T12:00:00"
+            write_json(bundle_dir / "bundle.json", bundle)
+            write_checksums(bundle_dir)
+
+            errors = validate_bundle(bundle_dir)
+
+        self.assertIn("bundle.json.created_at: date-time must include a timezone", errors)
+
     def test_chunk_bundle_id_mismatch_is_reported(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             bundle_dir = Path(tmp) / "bundle"
