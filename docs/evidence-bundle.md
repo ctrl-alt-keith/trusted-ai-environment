@@ -47,6 +47,10 @@ source and item IDs, title, text, location, time, chunker identity, token
 estimate, chunk hash, sensitivity, and metadata so arc workers can consume
 chunks with minimal joins.
 
+Every schema `date-time` field in the bundle must include a timezone offset.
+Use RFC3339 timestamps with `Z` for UTC in bundle examples and generated test
+data; naive values without a timezone fail validation.
+
 `relations.jsonl` uses nested endpoints:
 
 ```json
