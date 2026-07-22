@@ -51,6 +51,10 @@ sensitivity. Chunks are the primary arc input, so each chunk includes enough
 title, time, location, chunker, hash, and sensitivity metadata for downstream
 workers to consume it without constant joins.
 
+All bundle `date-time` fields must include an explicit timezone offset. The
+checked-in examples use RFC3339 UTC timestamps ending in `Z`, and naive values
+such as `2026-01-15T12:00:00` fail validation.
+
 Relations are source-observed or synthetic-observed links between existing
 sources, items, or chunks. Findings and synthesis reports are outputs, not
 evidence, and are not stored in the evidence bundle contract. Future findings
