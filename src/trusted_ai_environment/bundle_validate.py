@@ -348,6 +348,8 @@ def validate_bundle(bundle_dir: Path) -> list[str]:
 
     bundle = load_json(bundle_dir / "bundle.json")
     errors.extend(validate_with_schema("bundle.schema.json", bundle, "bundle.json"))
+    if not isinstance(bundle, dict):
+        return errors
 
     rows_by_file: dict[str, list[dict[str, Any]]] = {}
     for filename, schema_name in JSONL_FILES.items():

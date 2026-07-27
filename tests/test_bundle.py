@@ -53,6 +53,17 @@ class BundleValidationTests(unittest.TestCase):
             errors = validate_bundle(bundle_dir)
             self.assertIn("bundle.contents.chunk_count must be 6", errors)
 
+    def test_non_object_bundle_metadata_is_reported(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            bundle_dir = Path(tmp) / "bundle"
+            create_fake_bundle(bundle_dir)
+            write_json(bundle_dir / "bundle.json", [])
+            write_checksums(bundle_dir)
+
+            errors = validate_bundle(bundle_dir)
+
+        self.assertEqual(errors, ["bundle.json: expected object, got array"])
+
     def test_naive_bundle_timestamp_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             bundle_dir = Path(tmp) / "bundle"
