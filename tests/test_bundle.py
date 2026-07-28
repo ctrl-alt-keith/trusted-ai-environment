@@ -90,6 +90,22 @@ class BundleValidationTests(unittest.TestCase):
                 any("source_id must match parent item.source_id" in error for error in errors)
             )
 
+    def test_item_source_system_mismatch_is_reported(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            bundle_dir = Path(tmp) / "bundle"
+            create_fake_bundle(bundle_dir)
+            items = load_jsonl(bundle_dir / "items.jsonl")
+            items[0]["source_ref"]["system"] = "different-synthetic-system"
+            write_jsonl(bundle_dir / "items.jsonl", items)
+            write_checksums(bundle_dir)
+
+            errors = validate_bundle(bundle_dir)
+
+        self.assertIn(
+            "item-stale-runbook: source_ref.system must match parent source.system",
+            errors,
+        )
+
     def test_item_content_ref_mismatch_is_reported(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             bundle_dir = Path(tmp) / "bundle"

@@ -266,6 +266,11 @@ def validate_references(
     source_ids = {row["source_id"] for row in sources if isinstance(row.get("source_id"), str)}
     item_ids = {row["item_id"] for row in items if isinstance(row.get("item_id"), str)}
     chunk_ids = {row["chunk_id"] for row in chunks if isinstance(row.get("chunk_id"), str)}
+    sources_by_id = {
+        row["source_id"]: row
+        for row in sources
+        if isinstance(row.get("source_id"), str)
+    }
     items_by_id = {
         row["item_id"]: row for row in items if isinstance(row.get("item_id"), str)
     }
@@ -277,6 +282,16 @@ def validate_references(
         source_id = row.get("source_id")
         if source_id not in source_ids:
             errors.append(f"{item_id}: source_id does not exist: {source_id}")
+        parent_source = sources_by_id.get(source_id)
+        source_ref = row.get("source_ref")
+        if (
+            parent_source
+            and isinstance(source_ref, dict)
+            and source_ref.get("system") != parent_source.get("system")
+        ):
+            errors.append(
+                f"{item_id}: source_ref.system must match parent source.system"
+            )
         if "sensitivity" not in row:
             errors.append(f"{item_id}: missing sensitivity")
         body = row.get("body")
