@@ -3,12 +3,11 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 from pathlib import Path
 from typing import Any
 
-from .checksum import write_checksums
+from .checksum import byte_len, sha256_text, write_checksums
 
 BUNDLE_ID = "fake-corpus"
 BUNDLE_VERSION = "0.1.0"
@@ -24,14 +23,6 @@ def write_json(path: Path, value: object) -> None:
 def write_jsonl(path: Path, rows: list[dict[str, object]]) -> None:
     text = "".join(json.dumps(row, sort_keys=True) + "\n" for row in rows)
     path.write_text(text, encoding="utf-8")
-
-
-def sha256_text(text: str) -> str:
-    return hashlib.sha256(text.encode("utf-8")).hexdigest()
-
-
-def byte_len(text: str) -> int:
-    return len(text.encode("utf-8"))
 
 
 def synthetic_boundary() -> dict[str, object]:
@@ -348,4 +339,3 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

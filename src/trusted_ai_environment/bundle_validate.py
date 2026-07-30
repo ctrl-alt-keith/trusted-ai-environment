@@ -3,14 +3,13 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import re
 from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from .checksum import CHECKSUMMED_FILES, verify_checksums
+from .checksum import CHECKSUMMED_FILES, byte_len, sha256_text, verify_checksums
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SCHEMA_DIR = REPO_ROOT / "schemas"
@@ -41,14 +40,6 @@ SUSPICIOUS_MARKERS = (
 
 class ValidationError(Exception):
     """Raised for bundle validation errors."""
-
-
-def sha256_text(text: str) -> str:
-    return hashlib.sha256(text.encode("utf-8")).hexdigest()
-
-
-def byte_len(text: str) -> int:
-    return len(text.encode("utf-8"))
 
 
 def load_json(path: Path) -> Any:
