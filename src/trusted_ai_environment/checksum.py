@@ -25,6 +25,14 @@ def file_sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def sha256_text(text: str) -> str:
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def byte_len(text: str) -> int:
+    return len(text.encode("utf-8"))
+
+
 def compute_checksums(bundle_dir: Path) -> dict[str, str]:
     return {name: file_sha256(bundle_dir / name) for name in CHECKSUMMED_FILES}
 
@@ -89,4 +97,3 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

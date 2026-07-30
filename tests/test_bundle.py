@@ -6,7 +6,7 @@ import unittest
 from pathlib import Path
 
 from trusted_ai_environment.bundle_validate import validate_bundle
-from trusted_ai_environment.checksum import write_checksums
+from trusted_ai_environment.checksum import byte_len, sha256_text, write_checksums
 from trusted_ai_environment.fake_bundle import create_fake_bundle
 from trusted_ai_environment.synthesize_stub import build_report
 
@@ -28,6 +28,13 @@ def write_jsonl(path: Path, rows: list[dict[str, object]]) -> None:
 
 
 class BundleValidationTests(unittest.TestCase):
+    def test_text_checksum_helpers_use_utf8_bytes(self) -> None:
+        self.assertEqual(byte_len("café"), 5)
+        self.assertEqual(
+            sha256_text("café"),
+            "850f7dc43910ff890f8879c0ed26fe697c93a067ad93a7d50f466a7028a9bf4e",
+        )
+
     def test_fake_bundle_validates(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             bundle_dir = Path(tmp) / "bundle"
