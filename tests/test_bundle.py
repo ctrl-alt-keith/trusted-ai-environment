@@ -264,6 +264,34 @@ class BundleValidationTests(unittest.TestCase):
             self.assertIn("unexpected bundle entry: notes.md", errors)
             self.assertIn("unexpected bundle entry: attachments/", errors)
 
+    def test_required_file_symlink_is_rejected_before_bundle_reads(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            bundle_dir = Path(tmp) / "bundle"
+            create_fake_bundle(bundle_dir)
+            external = Path(tmp) / "external.json"
+            external.write_text('{}\n', encoding="utf-8")
+            (bundle_dir / "bundle.json").unlink()
+            (bundle_dir / "bundle.json").symlink_to(external)
+
+            errors = validate_bundle(bundle_dir)
+
+        self.assertEqual(
+            errors,
+            ["bundle entry must not be a symbolic link: bundle.json"],
+        )
+
+    def test_unexpected_symlink_is_rejected_explicitly(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            bundle_dir = Path(tmp) / "bundle"
+            create_fake_bundle(bundle_dir)
+            external = Path(tmp) / "external.txt"
+            external.write_text("Synthetic external text.\n", encoding="utf-8")
+            (bundle_dir / "notes.md").symlink_to(external)
+
+            errors = validate_bundle(bundle_dir)
+
+        self.assertIn("bundle entry must not be a symbolic link: notes.md", errors)
+
     def test_public_safety_markers_are_reported(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             bundle_dir = Path(tmp) / "bundle"

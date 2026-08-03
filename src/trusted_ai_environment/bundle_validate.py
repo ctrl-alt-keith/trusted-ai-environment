@@ -157,6 +157,8 @@ def validate_bundle_layout(bundle_dir: Path) -> list[str]:
     errors: list[str] = []
     if not bundle_dir.exists():
         return [f"bundle directory does not exist: {bundle_dir}"]
+    if bundle_dir.is_symlink():
+        return [f"bundle path must not be a symbolic link: {bundle_dir}"]
     if not bundle_dir.is_dir():
         return [f"bundle path is not a directory: {bundle_dir}"]
 
@@ -164,10 +166,16 @@ def validate_bundle_layout(bundle_dir: Path) -> list[str]:
         path = bundle_dir / filename
         if not path.exists():
             errors.append(f"missing required file: {filename}")
+        elif path.is_symlink():
+            errors.append(f"bundle entry must not be a symbolic link: {filename}")
         elif not path.is_file():
             errors.append(f"required path is not a file: {filename}")
 
     for path in sorted(bundle_dir.iterdir(), key=lambda item: item.name):
+        if path.is_symlink():
+            if path.name not in EXPECTED_BUNDLE_ENTRIES:
+                errors.append(f"bundle entry must not be a symbolic link: {path.name}")
+            continue
         if path.name in EXPECTED_BUNDLE_ENTRIES:
             continue
         label = f"{path.name}/" if path.is_dir() else path.name
