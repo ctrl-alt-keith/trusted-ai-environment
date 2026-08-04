@@ -1,11 +1,16 @@
 from __future__ import annotations
 
 import json
+import re
 import tempfile
 import unittest
 from pathlib import Path
 
-from trusted_ai_environment.bundle_validate import validate_bundle
+from trusted_ai_environment.bundle_validate import (
+    ValidationError,
+    load_jsonl as load_bundle_jsonl,
+    validate_bundle,
+)
 from trusted_ai_environment.checksum import byte_len, sha256_text, write_checksums
 from trusted_ai_environment.fake_bundle import create_fake_bundle
 from trusted_ai_environment.synthesize_stub import build_report
@@ -83,6 +88,17 @@ class BundleValidationTests(unittest.TestCase):
             errors = validate_bundle(bundle_dir)
 
         self.assertIn("bundle.json.created_at: date-time must include a timezone", errors)
+
+    def test_invalid_jsonl_after_blank_line_reports_physical_line_number(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "items.jsonl"
+            path.write_text('\n{"item_id":\n', encoding="utf-8")
+
+            with self.assertRaisesRegex(
+                ValidationError,
+                rf"^{re.escape(str(path))}:2: invalid JSONL row:",
+            ):
+                load_bundle_jsonl(path)
 
     def test_chunk_bundle_id_mismatch_is_reported(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
