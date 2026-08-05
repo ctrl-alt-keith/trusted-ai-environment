@@ -64,6 +64,11 @@ should cite chunks.
 contain exactly one `<sha256>  <filename>` line for each bundle file except
 itself, with no duplicate or unexpected filenames.
 
+The bundle root and every required bundle entry must be ordinary filesystem
+paths. Validation rejects a bundle directory implemented as a symbolic link and
+rejects required files implemented as symbolic links, even when the linked
+names match the expected Stage 1 layout.
+
 ## Local Commands
 
 ```sh

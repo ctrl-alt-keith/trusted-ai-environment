@@ -16,8 +16,8 @@ evidence. They are intentionally not stored in the bundle in this MVP.
 
 - `fake_bundle.py` creates deterministic synthetic evidence.
 - `bundle_validate.py` validates required files, schemas, JSONL parsing,
-  references, bundle counts, file declarations, chunk self-consistency,
-  checksums, and public-safety guardrails.
+  symlink-free bundle paths, references, bundle counts, file declarations,
+  chunk self-consistency, checksums, and public-safety guardrails.
 - `checksum.py` computes and verifies bundle file hashes.
 - `synthesize_stub.py` produces a deterministic fake report without calling an
   LLM or external service.
