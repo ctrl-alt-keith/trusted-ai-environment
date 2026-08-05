@@ -67,6 +67,8 @@ values are `source`, `extracted`, and `synthetic`.
 ## Required Integrity Rules
 
 - Every bundle file must exist.
+- The bundle root must be an ordinary directory, not a symbolic link.
+- Every required bundle file must be an ordinary file, not a symbolic link.
 - The bundle root must not contain files or directories outside the declared
   Stage 1 layout.
 - `bundle.json` must be valid JSON and match `schemas/bundle.schema.json`.
