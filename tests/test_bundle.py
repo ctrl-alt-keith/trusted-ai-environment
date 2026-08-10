@@ -8,6 +8,7 @@ from pathlib import Path
 
 from trusted_ai_environment.bundle_validate import (
     ValidationError,
+    load_json as load_bundle_json,
     load_jsonl as load_bundle_jsonl,
     validate_bundle,
 )
@@ -99,6 +100,18 @@ class BundleValidationTests(unittest.TestCase):
                 rf"^{re.escape(str(path))}:2: invalid JSONL row:",
             ):
                 load_bundle_jsonl(path)
+
+    def test_duplicate_json_keys_are_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            metadata_path = Path(tmp) / "bundle.json"
+            metadata_path.write_text('{"bundle_id":"first","bundle_id":"second"}', encoding="utf-8")
+            rows_path = Path(tmp) / "items.jsonl"
+            rows_path.write_text('{"item_id":"first","item_id":"second"}\n', encoding="utf-8")
+
+            with self.assertRaisesRegex(ValidationError, "duplicate object key: bundle_id"):
+                load_bundle_json(metadata_path)
+            with self.assertRaisesRegex(ValidationError, "duplicate object key: item_id"):
+                load_bundle_jsonl(rows_path)
 
     def test_chunk_bundle_id_mismatch_is_reported(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
