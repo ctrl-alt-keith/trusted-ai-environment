@@ -42,9 +42,18 @@ class ValidationError(Exception):
     """Raised for bundle validation errors."""
 
 
+def unique_json_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    value: dict[str, Any] = {}
+    for key, item in pairs:
+        if key in value:
+            raise json.JSONDecodeError(f"duplicate object key: {key}", "", 0)
+        value[key] = item
+    return value
+
+
 def load_json(path: Path) -> Any:
     try:
-        return json.loads(path.read_text(encoding="utf-8"))
+        return json.loads(path.read_text(encoding="utf-8"), object_pairs_hook=unique_json_object)
     except json.JSONDecodeError as exc:
         raise ValidationError(f"{path}: invalid JSON: {exc}") from exc
 
@@ -55,7 +64,7 @@ def load_jsonl(path: Path) -> list[dict[str, Any]]:
         if not raw_line.strip():
             continue
         try:
-            row = json.loads(raw_line)
+            row = json.loads(raw_line, object_pairs_hook=unique_json_object)
         except json.JSONDecodeError as exc:
             raise ValidationError(f"{path}:{line_number}: invalid JSONL row: {exc}") from exc
         if not isinstance(row, dict):
