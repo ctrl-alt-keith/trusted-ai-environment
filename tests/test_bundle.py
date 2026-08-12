@@ -194,6 +194,23 @@ class BundleValidationTests(unittest.TestCase):
             errors = validate_bundle(bundle_dir)
             self.assertTrue(any("from.id does not exist" in error for error in errors))
 
+    def test_missing_relation_observation_endpoint_is_reported(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            bundle_dir = Path(tmp) / "bundle"
+            create_fake_bundle(bundle_dir)
+            relations = load_jsonl(bundle_dir / "relations.jsonl")
+            relations[0]["observed_in"]["id"] = "chunk-missing-observation"
+            write_jsonl(bundle_dir / "relations.jsonl", relations)
+            write_checksums(bundle_dir)
+
+            errors = validate_bundle(bundle_dir)
+
+        self.assertIn(
+            "rel-runbook-overlaps-guide: observed_in.id does not exist: "
+            "chunk-missing-observation",
+            errors,
+        )
+
     def test_duplicate_record_ids_are_reported(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             bundle_dir = Path(tmp) / "bundle"
