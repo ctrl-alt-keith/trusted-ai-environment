@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import argparse
 import hashlib
 from pathlib import Path
 
@@ -79,21 +78,3 @@ def verify_checksums(bundle_dir: Path) -> list[str]:
     for filename in extra:
         errors.append(f"checksums.sha256 has unexpected entry {filename}")
     return errors
-
-
-def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Compute bundle checksums.")
-    parser.add_argument("bundle_dir", type=Path)
-    parser.add_argument("--write", action="store_true", help="write checksums.sha256")
-    args = parser.parse_args(argv)
-
-    if args.write:
-        write_checksums(args.bundle_dir)
-        return 0
-
-    print(format_checksums(compute_checksums(args.bundle_dir)), end="")
-    return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())
