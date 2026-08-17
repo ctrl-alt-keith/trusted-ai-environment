@@ -365,6 +365,9 @@ class BundleValidationTests(unittest.TestCase):
             "http://[fd00::1]/private",
             "http://[fe80::1]/private",
             "http://[febf::1]/private",
+            "http://[fe80::1%25eth0]/private",
+            "http://[fe80::1%en0]/private",
+            "http://[febf::1%25eth0]/private",
         )
         for internal_url in internal_urls:
             with self.subTest(internal_url=internal_url), tempfile.TemporaryDirectory() as tmp:
