@@ -355,6 +355,33 @@ class BundleValidationTests(unittest.TestCase):
             self.assertIn("README.md: contains suspicious marker 'confidential'", errors)
             self.assertIn("sources.jsonl: contains an internal-looking URL", errors)
 
+    def test_public_safety_internal_network_urls_are_reported(self) -> None:
+        internal_urls = (
+            "http://127.0.0.2/private",
+            "http://0.0.0.0/private",
+            "http://169.254.169.254/latest/meta-data",
+            "http://[::1]/private",
+            "http://[::]/private",
+            "http://[fd00::1]/private",
+            "http://[fe80::1]/private",
+            "http://[febf::1]/private",
+            "http://[fe80::1%25eth0]/private",
+            "http://[fe80::1%en0]/private",
+            "http://[febf::1%25eth0]/private",
+        )
+        for internal_url in internal_urls:
+            with self.subTest(internal_url=internal_url), tempfile.TemporaryDirectory() as tmp:
+                bundle_dir = Path(tmp) / "bundle"
+                create_fake_bundle(bundle_dir)
+                sources = load_jsonl(bundle_dir / "sources.jsonl")
+                sources[0]["origin_ref"] = internal_url
+                write_jsonl(bundle_dir / "sources.jsonl", sources)
+                write_checksums(bundle_dir)
+
+                errors = validate_bundle(bundle_dir)
+
+                self.assertIn("sources.jsonl: contains an internal-looking URL", errors)
+
     def test_synthesis_stub_mentions_outputs_not_evidence(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             bundle_dir = Path(tmp) / "bundle"
