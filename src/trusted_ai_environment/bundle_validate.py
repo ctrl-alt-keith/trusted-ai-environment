@@ -22,7 +22,7 @@ JSONL_FILES = {
     "relations.jsonl": "relation.schema.json",
 }
 PRIVATE_URL_PATTERN = re.compile(
-    r"https?://[^\s)\"']*(localhost|127\.|0\.0\.0\.0|10\.|169\.254\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[0-1])\.|\[::1\]|\[(?:fc|fd)[0-9a-f:]*\]|internal|intranet|corp)",
+    r"https?://[^\s)\"']*(localhost|127\.|0\.0\.0\.0|10\.|169\.254\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[0-1])\.|\[::1\]|\[::\]|\[(?:fc|fd|fe[89ab])[0-9a-f:]*\]|internal|intranet|corp)",
     re.IGNORECASE,
 )
 SUSPICIOUS_MARKERS = (
