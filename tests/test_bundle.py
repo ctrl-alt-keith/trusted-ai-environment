@@ -55,6 +55,17 @@ class BundleValidationTests(unittest.TestCase):
                 [f"bundle directory does not exist: {bundle_dir}"],
             )
 
+    def test_bundle_root_symlink_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp) / "bundle-target"
+            create_fake_bundle(target)
+            bundle_dir = Path(tmp) / "bundle-link"
+            bundle_dir.symlink_to(target, target_is_directory=True)
+
+            errors = validate_bundle(bundle_dir)
+
+        self.assertEqual(errors, [f"bundle path must not be a symbolic link: {bundle_dir}"])
+
     def test_count_mismatch_is_reported(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             bundle_dir = Path(tmp) / "bundle"
