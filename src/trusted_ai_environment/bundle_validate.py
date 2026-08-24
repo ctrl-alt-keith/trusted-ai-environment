@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import argparse
+import ipaddress
 import json
 import re
+from urllib.parse import unquote, urlsplit
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -21,10 +23,7 @@ JSONL_FILES = {
     "chunks.jsonl": "chunk.schema.json",
     "relations.jsonl": "relation.schema.json",
 }
-PRIVATE_URL_PATTERN = re.compile(
-    r"https?://[^\s)\"']*(localhost|127\.|0\.0\.0\.0|10\.|169\.254\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[0-1])\.|\[::1\]|\[::\]|\[(?:fc|fd|fe[89ab])[0-9a-f:]*(?:%(?:25)?[0-9a-z._~-]+)?\]|internal|intranet|corp)",
-    re.IGNORECASE,
-)
+URL_PATTERN = re.compile(r"https?://[^\s)\"']+", re.IGNORECASE)
 SUSPICIOUS_MARKERS = (
     "real ticket",
     "real incident",
@@ -40,6 +39,47 @@ SUSPICIOUS_MARKERS = (
 
 class ValidationError(Exception):
     """Raised for bundle validation errors."""
+
+
+def _host_ip(hostname: str) -> ipaddress.IPv4Address | ipaddress.IPv6Address | None:
+    """Parse ordinary, scoped, and integer-form IP hostnames."""
+    decoded = unquote(hostname).removesuffix("%")
+    if "%" in decoded:
+        decoded = decoded.split("%", 1)[0]
+    try:
+        return ipaddress.ip_address(decoded)
+    except ValueError:
+        if decoded.isdecimal():
+            try:
+                value = int(decoded)
+                if value <= 0xFFFFFFFF:
+                    return ipaddress.IPv4Address(value)
+            except (ValueError, ipaddress.AddressValueError):
+                pass
+    return None
+
+
+def contains_internal_url(text: str) -> bool:
+    """Return whether text contains an internal-looking HTTP(S) URL."""
+    for match in URL_PATTERN.finditer(text):
+        candidate = match.group(0)
+        try:
+            hostname = urlsplit(candidate).hostname
+        except ValueError:
+            hostname = None
+        if not hostname:
+            continue
+        parsed_ip = _host_ip(hostname)
+        if parsed_ip and (
+            parsed_ip.is_private
+            or parsed_ip.is_loopback
+            or parsed_ip.is_link_local
+            or parsed_ip.is_unspecified
+        ):
+            return True
+        if any(marker in hostname.lower() for marker in ("internal", "intranet", "corp")):
+            return True
+    return False
 
 
 def unique_json_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
@@ -355,7 +395,7 @@ def scan_public_safety(bundle_dir: Path) -> list[str]:
         if not path.is_file():
             continue
         text = path.read_text(encoding="utf-8")
-        if PRIVATE_URL_PATTERN.search(text):
+        if contains_internal_url(text):
             errors.append(f"{path.name}: contains an internal-looking URL")
         lower = text.lower()
         for marker in SUSPICIOUS_MARKERS:
