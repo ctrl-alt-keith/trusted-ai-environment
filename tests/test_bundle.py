@@ -8,6 +8,7 @@ from pathlib import Path
 
 from trusted_ai_environment.bundle_validate import (
     ValidationError,
+    contains_internal_url,
     load_json as load_bundle_json,
     load_jsonl as load_bundle_jsonl,
     validate_bundle,
@@ -411,6 +412,12 @@ class BundleValidationTests(unittest.TestCase):
                 errors = validate_bundle(bundle_dir)
 
                 self.assertIn("sources.jsonl: contains an internal-looking URL", errors)
+
+    def test_public_safety_detects_internal_urls_before_prose_punctuation(self) -> None:
+        for punctuation in (".", ",", ";"):
+            with self.subTest(punctuation=punctuation):
+                self.assertTrue(contains_internal_url(f"See http://127.0.0.1{punctuation}"))
+                self.assertTrue(contains_internal_url(f"See http://[::1]{punctuation}"))
 
     def test_synthesis_stub_mentions_outputs_not_evidence(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

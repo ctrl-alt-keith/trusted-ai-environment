@@ -62,7 +62,10 @@ def _host_ip(hostname: str) -> ipaddress.IPv4Address | ipaddress.IPv6Address | N
 def contains_internal_url(text: str) -> bool:
     """Return whether text contains an internal-looking HTTP(S) URL."""
     for match in URL_PATTERN.finditer(text):
-        candidate = match.group(0)
+        # URL_PATTERN intentionally stays a lightweight recognizer. Remove
+        # prose punctuation before handing the candidate to the standard
+        # URL/IP parsers so it cannot become part of a hostname.
+        candidate = match.group(0).rstrip(".,;")
         try:
             hostname = urlsplit(candidate).hostname
         except ValueError:
