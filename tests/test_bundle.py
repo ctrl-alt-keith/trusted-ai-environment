@@ -397,6 +397,7 @@ class BundleValidationTests(unittest.TestCase):
     def test_public_safety_detects_alternate_private_ip_forms(self) -> None:
         internal_urls = (
             "http://2130706433/private",
+            "http://0x7f000001/private",
             "http://[::ffff:127.0.0.1]/private",
             "http://[::ffff:10.0.0.1]/private",
         )
