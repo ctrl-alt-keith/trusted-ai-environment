@@ -49,13 +49,17 @@ def _host_ip(hostname: str) -> ipaddress.IPv4Address | ipaddress.IPv6Address | N
     try:
         return ipaddress.ip_address(decoded)
     except ValueError:
-        if decoded.isdecimal() or decoded.lower().startswith("0x"):
-            try:
-                value = int(decoded, 0)
-                if value <= 0xFFFFFFFF:
-                    return ipaddress.IPv4Address(value)
-            except (ValueError, ipaddress.AddressValueError):
-                pass
+        try:
+            if decoded.isdecimal():
+                value = int(decoded, 10)
+            elif decoded.lower().startswith("0x"):
+                value = int(decoded, 16)
+            else:
+                return None
+            if value <= 0xFFFFFFFF:
+                return ipaddress.IPv4Address(value)
+        except (ValueError, ipaddress.AddressValueError):
+            pass
     return None
 
 

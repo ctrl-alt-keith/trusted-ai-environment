@@ -420,6 +420,10 @@ class BundleValidationTests(unittest.TestCase):
                 self.assertTrue(contains_internal_url(f"See http://127.0.0.1{punctuation}"))
                 self.assertTrue(contains_internal_url(f"See http://[::1]{punctuation}"))
 
+    def test_public_safety_detects_decimal_and_hexadecimal_integer_loopbacks(self) -> None:
+        self.assertTrue(contains_internal_url("http://0127/private"))
+        self.assertTrue(contains_internal_url("http://0x7f000001/private"))
+
     def test_synthesis_stub_mentions_outputs_not_evidence(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             bundle_dir = Path(tmp) / "bundle"
