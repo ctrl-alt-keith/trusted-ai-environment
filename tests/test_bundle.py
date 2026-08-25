@@ -397,6 +397,7 @@ class BundleValidationTests(unittest.TestCase):
     def test_public_safety_detects_alternate_private_ip_forms(self) -> None:
         internal_urls = (
             "http://2130706433/private",
+            "http://0x7f000001/private",
             "http://[::ffff:127.0.0.1]/private",
             "http://[::ffff:10.0.0.1]/private",
         )
@@ -418,6 +419,10 @@ class BundleValidationTests(unittest.TestCase):
             with self.subTest(punctuation=punctuation):
                 self.assertTrue(contains_internal_url(f"See http://127.0.0.1{punctuation}"))
                 self.assertTrue(contains_internal_url(f"See http://[::1]{punctuation}"))
+
+    def test_public_safety_detects_decimal_and_hexadecimal_integer_loopbacks(self) -> None:
+        self.assertTrue(contains_internal_url("http://0127/private"))
+        self.assertTrue(contains_internal_url("http://0x7f000001/private"))
 
     def test_synthesis_stub_mentions_outputs_not_evidence(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
