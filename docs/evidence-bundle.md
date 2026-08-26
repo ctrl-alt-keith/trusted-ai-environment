@@ -93,8 +93,10 @@ values are `source`, `extracted`, and `synthetic`.
 - `checksums.sha256` must contain exactly one `<sha256>  <filename>` entry for
   each checksummed bundle file, and duplicate or unexpected filenames are
   invalid.
-- Bundle files must not contain internal-looking URLs or suspicious
-  public-safety markers.
+- Bundle files must not contain internal-looking HTTP(S) URLs or suspicious
+  public-safety markers. URL validation rejects private, loopback, link-local,
+  and unspecified hosts, including decimal or hexadecimal IPv4 forms, as well
+  as hostnames containing `internal`, `intranet`, or `corp` markers.
 
 ## Supported Item Kinds
 
