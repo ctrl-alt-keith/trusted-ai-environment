@@ -398,6 +398,8 @@ class BundleValidationTests(unittest.TestCase):
         internal_urls = (
             "http://2130706433/private",
             "http://0x7f000001/private",
+            "http://0177.0.0.1/private",
+            "http://0x7f.0x0.0x0.0x1/private",
             "http://[::ffff:127.0.0.1]/private",
             "http://[::ffff:10.0.0.1]/private",
         )

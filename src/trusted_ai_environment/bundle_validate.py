@@ -49,6 +49,21 @@ def _host_ip(hostname: str) -> ipaddress.IPv4Address | ipaddress.IPv6Address | N
     try:
         return ipaddress.ip_address(decoded)
     except ValueError:
+        dotted_parts = decoded.split(".")
+        if len(dotted_parts) == 4:
+            try:
+                octets = [
+                    int(part, 16)
+                    if part.lower().startswith("0x")
+                    else int(part, 8)
+                    if len(part) > 1 and part.startswith("0")
+                    else int(part, 10)
+                    for part in dotted_parts
+                ]
+                if all(0 <= octet <= 255 for octet in octets):
+                    return ipaddress.IPv4Address(bytes(octets))
+            except ValueError:
+                pass
         try:
             if decoded.isdecimal():
                 value = int(decoded, 10)
