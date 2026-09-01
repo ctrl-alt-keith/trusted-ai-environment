@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import contextlib
+import io
 import json
 import re
 import tempfile
@@ -15,7 +17,7 @@ from trusted_ai_environment.bundle_validate import (
 )
 from trusted_ai_environment.checksum import byte_len, sha256_text, write_checksums
 from trusted_ai_environment.fake_bundle import create_fake_bundle
-from trusted_ai_environment.synthesize_stub import build_report
+from trusted_ai_environment.synthesize_stub import build_report, main as synthesize_main
 
 
 def load_json(path: Path) -> dict[str, object]:
@@ -433,6 +435,22 @@ class BundleValidationTests(unittest.TestCase):
             report = build_report(bundle_dir)
             self.assertIn("Synthetic Synthesis Report", report)
             self.assertIn("This report is an output, not bundle evidence.", report)
+
+    def test_synthesis_cli_rejects_invalid_bundle_without_creating_output(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            bundle_dir = Path(tmp) / "bundle"
+            output_path = Path(tmp) / "reports" / "synthesis.md"
+            create_fake_bundle(bundle_dir)
+            bundle = load_json(bundle_dir / "bundle.json")
+            bundle["contents"]["source_count"] = 99
+            write_json(bundle_dir / "bundle.json", bundle)
+            write_checksums(bundle_dir)
+
+            with contextlib.redirect_stdout(io.StringIO()):
+                exit_code = synthesize_main([str(bundle_dir), "--output", str(output_path)])
+
+            self.assertEqual(exit_code, 1)
+            self.assertFalse(output_path.exists())
 
 
 if __name__ == "__main__":
