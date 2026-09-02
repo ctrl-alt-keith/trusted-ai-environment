@@ -86,6 +86,9 @@ make check
 
 `make check` is the canonical local validation command.
 
+`synthesize-stub` validates the bundle before writing its report. If validation
+fails, it exits with an error and does not create the requested output file.
+
 ## Repository Contents
 
 - `docs/` describes the architecture, bundle contract, and trust boundary.
