@@ -7,7 +7,7 @@ from collections import Counter
 from pathlib import Path
 from typing import Any
 
-from .bundle_validate import load_json, load_jsonl, validate_bundle
+from .bundle_validate import ValidationError, load_json, load_jsonl, validate_bundle
 
 
 def rows_by_id(rows: list[dict[str, Any]], key: str) -> dict[str, dict[str, Any]]:
@@ -91,7 +91,7 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         report = build_report(args.bundle_dir)
-    except ValueError as exc:
+    except (OSError, ValidationError, ValueError) as exc:
         print(f"synthesis stub failed: {exc}")
         return 1
 

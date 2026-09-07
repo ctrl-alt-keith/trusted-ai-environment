@@ -444,6 +444,23 @@ class BundleValidationTests(unittest.TestCase):
             self.assertEqual(exit_code, 1)
             self.assertFalse(output_path.exists())
 
+    def test_synthesis_cli_reports_malformed_json_without_traceback(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            bundle_dir = Path(tmp) / "bundle"
+            output_path = Path(tmp) / "reports" / "synthesis.md"
+            create_fake_bundle(bundle_dir)
+            (bundle_dir / "items.jsonl").write_text('{"item_id":\n', encoding="utf-8")
+
+            stdout = io.StringIO()
+            with contextlib.redirect_stdout(stdout):
+                exit_code = synthesize_main([str(bundle_dir), "--output", str(output_path)])
+
+            self.assertEqual(exit_code, 1)
+            self.assertIn("synthesis stub failed:", stdout.getvalue())
+            self.assertIn("invalid JSONL row", stdout.getvalue())
+            self.assertNotIn("Traceback", stdout.getvalue())
+            self.assertFalse(output_path.exists())
+
 
 if __name__ == "__main__":
     unittest.main()
