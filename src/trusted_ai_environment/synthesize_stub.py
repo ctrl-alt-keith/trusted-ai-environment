@@ -91,12 +91,12 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         report = build_report(args.bundle_dir)
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(report, encoding="utf-8")
     except (OSError, ValidationError, ValueError) as exc:
         print(f"synthesis stub failed: {exc}")
         return 1
 
-    args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(report, encoding="utf-8")
     print(f"wrote synthesis stub report: {args.output}")
     return 0
 
