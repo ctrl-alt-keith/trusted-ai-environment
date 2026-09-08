@@ -461,6 +461,23 @@ class BundleValidationTests(unittest.TestCase):
             self.assertNotIn("Traceback", stdout.getvalue())
             self.assertFalse(output_path.exists())
 
+    def test_synthesis_cli_reports_output_path_failure_without_traceback(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            bundle_dir = Path(tmp) / "bundle"
+            output_parent = Path(tmp) / "not-a-directory"
+            output_path = output_parent / "synthesis.md"
+            create_fake_bundle(bundle_dir)
+            output_parent.write_text("synthetic blocking file\n", encoding="utf-8")
+
+            stdout = io.StringIO()
+            with contextlib.redirect_stdout(stdout):
+                exit_code = synthesize_main([str(bundle_dir), "--output", str(output_path)])
+
+            self.assertEqual(exit_code, 1)
+            self.assertIn("synthesis stub failed:", stdout.getvalue())
+            self.assertNotIn("Traceback", stdout.getvalue())
+            self.assertFalse(output_path.exists())
+
 
 if __name__ == "__main__":
     unittest.main()
