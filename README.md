@@ -88,6 +88,8 @@ make check
 
 `synthesize-stub` validates the bundle before writing its report. If validation
 fails, it exits with an error and does not create the requested output file.
+Malformed bundle input and output-path failures also return a concise error
+without a traceback.
 
 ## Repository Contents
 
