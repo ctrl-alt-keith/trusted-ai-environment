@@ -81,26 +81,29 @@ def _host_ip(hostname: str) -> ipaddress.IPv4Address | ipaddress.IPv6Address | N
 def contains_internal_url(text: str) -> bool:
     """Return whether text contains an internal-looking HTTP(S) URL."""
     for match in URL_PATTERN.finditer(text):
-        # URL_PATTERN intentionally stays a lightweight recognizer. Remove
-        # prose punctuation before handing the candidate to the standard
-        # URL/IP parsers so it cannot become part of a hostname.
+        # Parse the original bracketed IPv6 URL first, then retry without
+        # Markdown closing punctuation that may be mistaken for a hostname.
         candidate = match.group(0).rstrip(".,;")
-        try:
-            hostname = urlsplit(candidate).hostname
-        except ValueError:
-            hostname = None
-        if not hostname:
-            continue
-        parsed_ip = _host_ip(hostname)
-        if parsed_ip and (
-            parsed_ip.is_private
-            or parsed_ip.is_loopback
-            or parsed_ip.is_link_local
-            or parsed_ip.is_unspecified
-        ):
-            return True
-        if any(marker in hostname.lower() for marker in ("internal", "intranet", "corp")):
-            return True
+        while candidate:
+            try:
+                hostname = urlsplit(candidate).hostname
+            except ValueError:
+                hostname = None
+            if hostname:
+                parsed_ip = _host_ip(hostname)
+                if parsed_ip and (
+                    parsed_ip.is_private
+                    or parsed_ip.is_loopback
+                    or parsed_ip.is_link_local
+                    or parsed_ip.is_unspecified
+                ):
+                    return True
+                if any(marker in hostname.lower() for marker in ("internal", "intranet", "corp")):
+                    return True
+            if candidate.endswith(("]", "}")):
+                candidate = candidate[:-1].rstrip(".,;")
+            else:
+                break
     return False
 
 
