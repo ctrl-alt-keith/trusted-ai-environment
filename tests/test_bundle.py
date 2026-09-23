@@ -419,7 +419,7 @@ class BundleValidationTests(unittest.TestCase):
                 self.assertIn("sources.jsonl: contains an internal-looking URL", errors)
 
     def test_public_safety_detects_internal_urls_before_prose_punctuation(self) -> None:
-        for punctuation in (".", ",", ";"):
+        for punctuation in (".", ",", ";", "]", "}"):
             with self.subTest(punctuation=punctuation):
                 self.assertTrue(contains_internal_url(f"See http://127.0.0.1{punctuation}"))
                 self.assertTrue(contains_internal_url(f"See http://[::1]{punctuation}"))
