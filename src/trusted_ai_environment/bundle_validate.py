@@ -316,9 +316,9 @@ def endpoint_errors(
         return [f"{relation_id}: {endpoint_name} endpoint must be an object"]
     endpoint_type = endpoint.get("type")
     endpoint_id = endpoint.get("id")
-    if endpoint_type not in ids_by_type:
+    if not isinstance(endpoint_type, str) or endpoint_type not in ids_by_type:
         return [f"{relation_id}: {endpoint_name}.type is invalid: {endpoint_type!r}"]
-    if endpoint_id not in ids_by_type[endpoint_type]:
+    if not isinstance(endpoint_id, str) or endpoint_id not in ids_by_type[endpoint_type]:
         return [f"{relation_id}: {endpoint_name}.id does not exist: {endpoint_id}"]
     return []
 

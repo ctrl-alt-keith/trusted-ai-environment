@@ -208,6 +208,22 @@ class BundleValidationTests(unittest.TestCase):
             errors = validate_bundle(bundle_dir)
             self.assertTrue(any("from.id does not exist" in error for error in errors))
 
+    def test_malformed_relation_endpoint_values_are_reported_without_type_error(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            bundle_dir = Path(tmp) / "bundle"
+            create_fake_bundle(bundle_dir)
+            relations = load_jsonl(bundle_dir / "relations.jsonl")
+            relations[0]["from"]["type"] = []
+            relations[0]["to"]["id"] = {"unexpected": "object"}
+            write_jsonl(bundle_dir / "relations.jsonl", relations)
+            write_checksums(bundle_dir)
+
+            errors = validate_bundle(bundle_dir)
+
+        self.assertTrue(any("from.type: expected string, got array" in error for error in errors))
+        self.assertTrue(any("from.type is invalid" in error for error in errors))
+        self.assertTrue(any("to.id does not exist" in error for error in errors))
+
     def test_missing_relation_observation_endpoint_is_reported(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             bundle_dir = Path(tmp) / "bundle"
