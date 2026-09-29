@@ -167,6 +167,25 @@ class BundleValidationTests(unittest.TestCase):
             errors,
         )
 
+    def test_malformed_item_and_chunk_reference_ids_are_reported(self) -> None:
+        cases = (
+            ("items.jsonl", "source_id", [], "source_id: expected string, got array"),
+            ("chunks.jsonl", "item_id", {}, "item_id: expected string, got object"),
+            ("chunks.jsonl", "source_id", [], "source_id: expected string, got array"),
+        )
+        for filename, field, value, expected in cases:
+            with self.subTest(filename=filename, field=field), tempfile.TemporaryDirectory() as tmp:
+                bundle_dir = Path(tmp) / "bundle"
+                create_fake_bundle(bundle_dir)
+                rows = load_jsonl(bundle_dir / filename)
+                rows[0][field] = value
+                write_jsonl(bundle_dir / filename, rows)
+                write_checksums(bundle_dir)
+
+                errors = validate_bundle(bundle_dir)
+
+                self.assertTrue(any(expected in error for error in errors), errors)
+
     def test_item_content_ref_mismatch_is_reported(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             bundle_dir = Path(tmp) / "bundle"

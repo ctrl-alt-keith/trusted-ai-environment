@@ -353,9 +353,9 @@ def validate_references(
     for row in items:
         item_id = row.get("item_id", "<unknown item>")
         source_id = row.get("source_id")
-        if source_id not in source_ids:
+        if not isinstance(source_id, str) or source_id not in source_ids:
             errors.append(f"{item_id}: source_id does not exist: {source_id}")
-        parent_source = sources_by_id.get(source_id)
+        parent_source = sources_by_id.get(source_id) if isinstance(source_id, str) else None
         source_ref = row.get("source_ref")
         if (
             parent_source
@@ -382,11 +382,11 @@ def validate_references(
         text = row.get("text")
         if row.get("bundle_id") != bundle_id:
             errors.append(f"{chunk_id}: bundle_id must match bundle.bundle_id")
-        if item_id not in item_ids:
+        if not isinstance(item_id, str) or item_id not in item_ids:
             errors.append(f"{chunk_id}: item_id does not exist: {item_id}")
-        if source_id not in source_ids:
+        if not isinstance(source_id, str) or source_id not in source_ids:
             errors.append(f"{chunk_id}: source_id does not exist: {source_id}")
-        parent_item = items_by_id.get(item_id)
+        parent_item = items_by_id.get(item_id) if isinstance(item_id, str) else None
         if parent_item and source_id != parent_item.get("source_id"):
             errors.append(f"{chunk_id}: source_id must match parent item.source_id")
         if isinstance(text, str):
