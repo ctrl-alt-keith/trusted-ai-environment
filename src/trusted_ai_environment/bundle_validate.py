@@ -365,8 +365,6 @@ def validate_references(
             errors.append(
                 f"{item_id}: source_ref.system must match parent source.system"
             )
-        if "sensitivity" not in row:
-            errors.append(f"{item_id}: missing sensitivity")
         body = row.get("body")
         content_ref = row.get("content_ref")
         if isinstance(body, str) and isinstance(content_ref, dict):
@@ -402,8 +400,6 @@ def validate_references(
                         errors.append(f"{chunk_id}: location char span is outside parent item body")
                     elif parent_body[start:end] != text:
                         errors.append(f"{chunk_id}: text must match parent item body char span")
-        if "sensitivity" not in row:
-            errors.append(f"{chunk_id}: missing sensitivity")
 
     for row in relations:
         relation_id = row.get("relation_id", "<unknown relation>")
