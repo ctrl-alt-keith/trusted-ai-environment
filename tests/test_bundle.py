@@ -127,6 +127,21 @@ class BundleValidationTests(unittest.TestCase):
             with self.assertRaisesRegex(ValidationError, "duplicate object key: item_id"):
                 load_bundle_jsonl(rows_path)
 
+    def test_nonstandard_numeric_constants_are_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            metadata_path = Path(tmp) / "bundle.json"
+            metadata_path.write_text('{"source_count":NaN}', encoding="utf-8")
+            rows_path = Path(tmp) / "items.jsonl"
+            rows_path.write_text('\n{"size_bytes":Infinity}\n', encoding="utf-8")
+
+            with self.assertRaisesRegex(ValidationError, "nonstandard JSON value NaN"):
+                load_bundle_json(metadata_path)
+            with self.assertRaisesRegex(
+                ValidationError,
+                rf"^{re.escape(str(rows_path))}:2: invalid JSONL row: .*Infinity",
+            ):
+                load_bundle_jsonl(rows_path)
+
     def test_chunk_bundle_id_mismatch_is_reported(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             bundle_dir = Path(tmp) / "bundle"

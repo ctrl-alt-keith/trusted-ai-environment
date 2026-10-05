@@ -116,10 +116,16 @@ def unique_json_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
     return value
 
 
+def reject_nonfinite_constant(value: str) -> None:
+    raise ValueError(f"nonstandard JSON value {value} is not allowed")
+
+
 def load_json(path: Path) -> Any:
     try:
-        return json.loads(path.read_text(encoding="utf-8"), object_pairs_hook=unique_json_object)
-    except json.JSONDecodeError as exc:
+        return json.loads(path.read_text(encoding="utf-8"),
+                          object_pairs_hook=unique_json_object,
+                          parse_constant=reject_nonfinite_constant)
+    except (json.JSONDecodeError, ValueError) as exc:
         raise ValidationError(f"{path}: invalid JSON: {exc}") from exc
 
 
@@ -129,8 +135,9 @@ def load_jsonl(path: Path) -> list[dict[str, Any]]:
         if not raw_line.strip():
             continue
         try:
-            row = json.loads(raw_line, object_pairs_hook=unique_json_object)
-        except json.JSONDecodeError as exc:
+            row = json.loads(raw_line, object_pairs_hook=unique_json_object,
+                             parse_constant=reject_nonfinite_constant)
+        except (json.JSONDecodeError, ValueError) as exc:
             raise ValidationError(f"{path}:{line_number}: invalid JSONL row: {exc}") from exc
         if not isinstance(row, dict):
             raise ValidationError(f"{path}:{line_number}: JSONL row must be an object")
