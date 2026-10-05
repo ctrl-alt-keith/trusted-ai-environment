@@ -67,7 +67,8 @@ itself, with no duplicate or unexpected filenames.
 `bundle.json` and every JSONL record must use unique JSON object keys. The
 validator rejects duplicate keys instead of accepting an implementation-defined
 last value; this is separate from the requirement that record IDs are unique
-within each JSONL file.
+within each JSONL file. Nonstandard numeric tokens such as `NaN` and `Infinity`
+are also rejected in bundle metadata and JSONL records.
 
 The bundle root and every required bundle entry must be ordinary filesystem
 paths. Validation rejects a bundle directory implemented as a symbolic link and
