@@ -478,6 +478,9 @@ class BundleValidationTests(unittest.TestCase):
         self.assertTrue(contains_internal_url("http://0127/private"))
         self.assertTrue(contains_internal_url("http://0x7f000001/private"))
 
+    def test_public_safety_detects_encoded_internal_hostname(self) -> None:
+        self.assertTrue(contains_internal_url("https://in%74ernal.example.invalid/fake"))
+
     def test_synthesis_cli_rejects_invalid_bundle_without_creating_output(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             bundle_dir = Path(tmp) / "bundle"
