@@ -98,7 +98,7 @@ def contains_internal_url(text: str) -> bool:
                     or parsed_ip.is_unspecified
                 ):
                     return True
-                if any(marker in hostname.lower() for marker in ("internal", "intranet", "corp")):
+                if any(marker in unquote(hostname).lower() for marker in ("internal", "intranet", "corp")):
                     return True
             if candidate.endswith(("]", "}")):
                 candidate = candidate[:-1].rstrip(".,;")
