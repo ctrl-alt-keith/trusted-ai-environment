@@ -417,12 +417,14 @@ def validate_references(
     return errors
 
 
-def scan_public_safety(bundle_dir: Path) -> list[str]:
+def scan_public_safety(bundle_dir: Path, parsed_files: dict[str, Any]) -> list[str]:
     errors: list[str] = []
     for path in sorted(bundle_dir.iterdir()):
         if not path.is_file():
             continue
         text = path.read_text(encoding="utf-8")
+        if path.name in parsed_files:
+            text += "\n" + json.dumps(parsed_files[path.name], ensure_ascii=False)
         if contains_internal_url(text):
             errors.append(f"{path.name}: contains an internal-looking URL")
         lower = text.lower()
@@ -468,7 +470,7 @@ def validate_bundle(bundle_dir: Path) -> list[str]:
         )
     )
     errors.extend(verify_checksums(bundle_dir))
-    errors.extend(scan_public_safety(bundle_dir))
+    errors.extend(scan_public_safety(bundle_dir, {"bundle.json": bundle, **rows_by_file}))
     return errors
 
 

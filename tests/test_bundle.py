@@ -481,6 +481,30 @@ class BundleValidationTests(unittest.TestCase):
     def test_public_safety_detects_encoded_internal_hostname(self) -> None:
         self.assertTrue(contains_internal_url("https://in%74ernal.example.invalid/fake"))
 
+    def test_public_safety_detects_json_escaped_internal_url(self) -> None:
+        for escaped_url in (
+            r"https://\u0069nternal.example.invalid/fake",
+            r"https:\/\/internal.example.invalid/fake",
+        ):
+            with self.subTest(escaped_url=escaped_url), tempfile.TemporaryDirectory() as tmp:
+                bundle_dir = Path(tmp) / "bundle"
+                create_fake_bundle(bundle_dir)
+                sources_path = bundle_dir / "sources.jsonl"
+                rows = load_jsonl(sources_path)
+                rows[0]["origin_ref"] = "https://internal.example.invalid/fake"
+                write_jsonl(sources_path, rows)
+                sources_path.write_text(
+                    sources_path.read_text(encoding="utf-8").replace(
+                        "https://internal.example.invalid/fake", escaped_url
+                    ),
+                    encoding="utf-8",
+                )
+                write_checksums(bundle_dir)
+
+                errors = validate_bundle(bundle_dir)
+
+                self.assertIn("sources.jsonl: contains an internal-looking URL", errors)
+
     def test_synthesis_cli_rejects_invalid_bundle_without_creating_output(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             bundle_dir = Path(tmp) / "bundle"
