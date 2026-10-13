@@ -521,6 +521,27 @@ class BundleValidationTests(unittest.TestCase):
             self.assertEqual(exit_code, 1)
             self.assertFalse(output_path.exists())
 
+    def test_synthesis_cli_preserves_existing_report_for_invalid_bundle(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            bundle_dir = Path(tmp) / "bundle"
+            output_path = Path(tmp) / "synthesis.md"
+            create_fake_bundle(bundle_dir)
+            original_report = "Previously generated synthetic report.\n"
+            output_path.write_text(original_report, encoding="utf-8")
+
+            bundle = load_json(bundle_dir / "bundle.json")
+            bundle["contents"]["source_count"] = 99
+            write_json(bundle_dir / "bundle.json", bundle)
+            write_checksums(bundle_dir)
+
+            stdout = io.StringIO()
+            with contextlib.redirect_stdout(stdout):
+                exit_code = synthesize_main([str(bundle_dir), "--output", str(output_path)])
+
+            self.assertEqual(exit_code, 1)
+            self.assertIn("bundle.contents.source_count must be", stdout.getvalue())
+            self.assertEqual(output_path.read_text(encoding="utf-8"), original_report)
+
     def test_synthesis_cli_reports_malformed_json_without_traceback(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             bundle_dir = Path(tmp) / "bundle"
