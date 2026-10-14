@@ -88,7 +88,8 @@ make check
 `make check` is the canonical local validation command.
 
 `synthesize-stub` validates the bundle before writing its report. If validation
-fails, it exits with an error and does not create the requested output file.
+fails, it exits with an error without creating or replacing the requested
+output file; an existing report at that path is left unchanged.
 Malformed bundle input and output-path failures also return a concise error
 without a traceback.
 
