@@ -11,8 +11,8 @@ from pathlib import Path
 from trusted_ai_environment.bundle_validate import (
     ValidationError,
     contains_internal_url,
-    load_json as load_bundle_json,
-    load_jsonl as load_bundle_jsonl,
+    load_json,
+    load_jsonl,
     validate_bundle,
 )
 from trusted_ai_environment.checksum import byte_len, sha256_text, write_checksums
@@ -20,16 +20,8 @@ from trusted_ai_environment.fake_bundle import create_fake_bundle
 from trusted_ai_environment.synthesize_stub import main as synthesize_main
 
 
-def load_json(path: Path) -> dict[str, object]:
-    return json.loads(path.read_text(encoding="utf-8"))
-
-
 def write_json(path: Path, value: object) -> None:
     path.write_text(json.dumps(value, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-
-
-def load_jsonl(path: Path) -> list[dict[str, object]]:
-    return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line]
 
 
 def write_jsonl(path: Path, rows: list[dict[str, object]]) -> None:
@@ -113,7 +105,7 @@ class BundleValidationTests(unittest.TestCase):
                 ValidationError,
                 rf"^{re.escape(str(path))}:2: invalid JSONL row:",
             ):
-                load_bundle_jsonl(path)
+                load_jsonl(path)
 
     def test_duplicate_json_keys_are_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -123,9 +115,9 @@ class BundleValidationTests(unittest.TestCase):
             rows_path.write_text('{"item_id":"first","item_id":"second"}\n', encoding="utf-8")
 
             with self.assertRaisesRegex(ValidationError, "duplicate object key: bundle_id"):
-                load_bundle_json(metadata_path)
+                load_json(metadata_path)
             with self.assertRaisesRegex(ValidationError, "duplicate object key: item_id"):
-                load_bundle_jsonl(rows_path)
+                load_jsonl(rows_path)
 
     def test_nonstandard_numeric_constants_are_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -135,12 +127,12 @@ class BundleValidationTests(unittest.TestCase):
             rows_path.write_text('\n{"size_bytes":Infinity}\n', encoding="utf-8")
 
             with self.assertRaisesRegex(ValidationError, "nonstandard JSON value NaN"):
-                load_bundle_json(metadata_path)
+                load_json(metadata_path)
             with self.assertRaisesRegex(
                 ValidationError,
                 rf"^{re.escape(str(rows_path))}:2: invalid JSONL row: .*Infinity",
             ):
-                load_bundle_jsonl(rows_path)
+                load_jsonl(rows_path)
 
     def test_chunk_bundle_id_mismatch_is_reported(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
