@@ -90,6 +90,9 @@ def contains_internal_url(text: str) -> bool:
             except ValueError:
                 hostname = None
             if hostname:
+                decoded_host = unquote(hostname).lower().rstrip(".")
+                if decoded_host == "localhost" or decoded_host.endswith(".localhost"):
+                    return True
                 parsed_ip = _host_ip(hostname)
                 if parsed_ip and (
                     parsed_ip.is_private
@@ -98,7 +101,7 @@ def contains_internal_url(text: str) -> bool:
                     or parsed_ip.is_unspecified
                 ):
                     return True
-                if any(marker in unquote(hostname).lower() for marker in ("internal", "intranet", "corp")):
+                if any(marker in decoded_host for marker in ("internal", "intranet", "corp")):
                     return True
             if candidate.endswith(("]", "}")):
                 candidate = candidate[:-1].rstrip(".,;")

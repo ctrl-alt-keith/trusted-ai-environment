@@ -413,6 +413,10 @@ class BundleValidationTests(unittest.TestCase):
 
     def test_public_safety_internal_network_urls_are_reported(self) -> None:
         internal_urls = (
+            "http://localhost/private",
+            "http://service.localhost/private",
+            "http://local%68ost/private",
+            "http://localhost./private",
             "http://127.0.0.2/private",
             "http://0.0.0.0/private",
             "http://169.254.169.254/latest/meta-data",
