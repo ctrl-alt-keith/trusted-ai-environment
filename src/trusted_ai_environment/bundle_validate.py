@@ -42,7 +42,7 @@ class ValidationError(Exception):
 
 
 def _host_ip(hostname: str) -> ipaddress.IPv4Address | ipaddress.IPv6Address | None:
-    """Parse ordinary, scoped, and integer-form IP hostnames."""
+    """Parse ordinary, scoped, abbreviated, and integer-form IP hostnames."""
     decoded = unquote(hostname).removesuffix("%")
     if "%" in decoded:
         decoded = decoded.split("%", 1)[0]
@@ -50,9 +50,9 @@ def _host_ip(hostname: str) -> ipaddress.IPv4Address | ipaddress.IPv6Address | N
         return ipaddress.ip_address(decoded)
     except ValueError:
         dotted_parts = decoded.split(".")
-        if len(dotted_parts) == 4:
+        if 2 <= len(dotted_parts) <= 4:
             try:
-                octets = [
+                components = [
                     int(part, 16)
                     if part.lower().startswith("0x")
                     else int(part, 8)
@@ -60,8 +60,14 @@ def _host_ip(hostname: str) -> ipaddress.IPv4Address | ipaddress.IPv6Address | N
                     else int(part, 10)
                     for part in dotted_parts
                 ]
-                if all(0 <= octet <= 255 for octet in octets):
-                    return ipaddress.IPv4Address(bytes(octets))
+                final_bits = 8 * (5 - len(components))
+                if (all(0 <= part <= 255 for part in components[:-1])
+                        and 0 <= components[-1] < 1 << final_bits):
+                    address = sum(
+                        part << (24 - 8 * index)
+                        for index, part in enumerate(components[:-1])
+                    ) + components[-1]
+                    return ipaddress.IPv4Address(address)
             except ValueError:
                 pass
         try:

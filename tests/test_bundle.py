@@ -448,6 +448,11 @@ class BundleValidationTests(unittest.TestCase):
             "http://0x7f000001/private",
             "http://0177.0.0.1/private",
             "http://0x7f.0x0.0x0.0x1/private",
+            "http://127.1/private",
+            "http://10.1/private",
+            "http://172.16.1/private",
+            "http://192.168.1/private",
+            "http://0x7f.1/private",
             "http://[::ffff:127.0.0.1]/private",
             "http://[::ffff:10.0.0.1]/private",
         )
