@@ -96,7 +96,8 @@ values are `source`, `extracted`, and `synthetic`.
 - Bundle files must not contain internal-looking HTTP(S) URLs or suspicious
   public-safety markers, including URLs hidden by JSON string escapes. URL
   validation rejects private, loopback, link-local, and unspecified hosts,
-  including decimal or hexadecimal IPv4 forms, `localhost` and its subdomains,
+  including decimal, hexadecimal, octal, and abbreviated IPv4 forms,
+  `localhost` and its subdomains,
   as well as hostnames containing `internal`, `intranet`, or `corp` markers.
 
 ## Supported Item Kinds
