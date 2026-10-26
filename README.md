@@ -90,6 +90,8 @@ make check
 `synthesize-stub` validates the bundle before writing its report. If validation
 fails, it exits with an error without creating or replacing the requested
 output file; an existing report at that path is left unchanged.
+The report output must be outside the input bundle so it cannot replace a
+bundle file or add an unexpected bundle entry.
 Malformed bundle input and output-path failures also return a concise error
 without a traceback.
 
