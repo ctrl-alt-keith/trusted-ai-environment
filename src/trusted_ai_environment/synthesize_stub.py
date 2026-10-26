@@ -91,6 +91,10 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         report = build_report(args.bundle_dir)
+        bundle_root = args.bundle_dir.resolve()
+        output_path = args.output.resolve()
+        if output_path == bundle_root or bundle_root in output_path.parents:
+            raise ValueError("report output must be outside the input bundle")
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(report, encoding="utf-8")
     except (OSError, ValidationError, ValueError) as exc:

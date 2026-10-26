@@ -543,6 +543,30 @@ class BundleValidationTests(unittest.TestCase):
             self.assertIn("bundle.contents.source_count must be", stdout.getvalue())
             self.assertEqual(output_path.read_text(encoding="utf-8"), original_report)
 
+    def test_synthesis_cli_rejects_output_inside_input_bundle(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            bundle_dir = Path(tmp) / "bundle"
+            create_fake_bundle(bundle_dir)
+            original_manifest = (bundle_dir / "bundle.json").read_bytes()
+            alias = Path(tmp) / "bundle-alias"
+            alias.symlink_to(bundle_dir, target_is_directory=True)
+
+            for output_path in (
+                bundle_dir / "bundle.json",
+                bundle_dir / "report.md",
+                alias / "report.md",
+            ):
+                with self.subTest(output_path=output_path):
+                    stdout = io.StringIO()
+                    with contextlib.redirect_stdout(stdout):
+                        exit_code = synthesize_main([str(bundle_dir), "--output", str(output_path)])
+
+                    self.assertEqual(exit_code, 1)
+                    self.assertIn("report output must be outside the input bundle", stdout.getvalue())
+                    self.assertEqual((bundle_dir / "bundle.json").read_bytes(), original_manifest)
+                    self.assertFalse((bundle_dir / "report.md").exists())
+                    self.assertEqual(validate_bundle(bundle_dir), [])
+
     def test_synthesis_cli_reports_malformed_json_without_traceback(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             bundle_dir = Path(tmp) / "bundle"
