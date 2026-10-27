@@ -522,6 +522,25 @@ class BundleValidationTests(unittest.TestCase):
             self.assertEqual(exit_code, 1)
             self.assertFalse(output_path.exists())
 
+    def test_synthesis_cli_writes_deterministic_custom_output_outside_bundle(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            bundle_dir = Path(tmp) / "bundle"
+            first_output = Path(tmp) / "reports" / "first.md"
+            second_output = Path(tmp) / "reports" / "second.md"
+            create_fake_bundle(bundle_dir)
+
+            for output_path in (first_output, second_output):
+                with contextlib.redirect_stdout(io.StringIO()):
+                    exit_code = synthesize_main(
+                        [str(bundle_dir), "--output", str(output_path)]
+                    )
+                self.assertEqual(exit_code, 0)
+                self.assertTrue(output_path.is_file())
+
+            self.assertTrue(first_output.read_bytes())
+            self.assertEqual(first_output.read_bytes(), second_output.read_bytes())
+            self.assertEqual(validate_bundle(bundle_dir), [])
+
     def test_synthesis_cli_preserves_existing_report_for_invalid_bundle(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             bundle_dir = Path(tmp) / "bundle"
