@@ -77,6 +77,21 @@ names match the expected Stage 1 layout.
 
 ## Local Commands
 
+From the repository root, run the complete synthetic example and inspect its
+deterministic report:
+
+```sh
+make check
+cat build/synthesis-stub.md
+```
+
+`make check` refreshes `examples/fake-corpus/bundle/`, validates it, runs the
+local checks, and writes `build/synthesis-stub.md`. The bundle and report
+contain fake data only. To choose other paths, pass `BUNDLE_DIR` and `REPORT`
+to `make`, for example `make REPORT=build/another-report.md synthesize-stub`.
+
+Individual targets are available when only one step is needed:
+
 ```sh
 make help
 make fake-bundle
