@@ -603,6 +603,28 @@ class BundleValidationTests(unittest.TestCase):
             self.assertNotIn("Traceback", stdout.getvalue())
             self.assertFalse(output_path.exists())
 
+    def test_synthesis_cli_rejects_malformed_checksum_without_echoing_manifest(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            bundle_dir = Path(tmp) / "bundle"
+            output_path = Path(tmp) / "reports" / "synthesis.md"
+            malformed_digest = "MALFORMED_DIGEST_MUST_NOT_BE_ECHOED"
+            create_fake_bundle(bundle_dir)
+            (bundle_dir / "checksums.sha256").write_text(
+                f"{malformed_digest}  README.md\n",
+                encoding="utf-8",
+            )
+
+            stdout = io.StringIO()
+            with contextlib.redirect_stdout(stdout):
+                exit_code = synthesize_main([str(bundle_dir), "--output", str(output_path)])
+
+            self.assertEqual(exit_code, 1)
+            self.assertIn("synthesis stub failed: ", stdout.getvalue())
+            self.assertIn("invalid sha256 digest", stdout.getvalue())
+            self.assertNotIn("Traceback", stdout.getvalue())
+            self.assertNotIn(malformed_digest, stdout.getvalue())
+            self.assertFalse(output_path.exists())
+
     def test_synthesis_cli_reports_output_path_failure_without_traceback(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             bundle_dir = Path(tmp) / "bundle"
