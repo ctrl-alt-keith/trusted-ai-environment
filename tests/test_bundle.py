@@ -417,6 +417,8 @@ class BundleValidationTests(unittest.TestCase):
             "http://service.localhost/private",
             "http://local%68ost/private",
             "http://localhost./private",
+            "http://printer.local/private",
+            "http://LOCAL./private",
             "http://127.0.0.2/private",
             "http://0.0.0.0/private",
             "http://169.254.169.254/latest/meta-data",

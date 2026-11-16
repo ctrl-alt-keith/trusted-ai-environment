@@ -97,7 +97,7 @@ values are `source`, `extracted`, and `synthetic`.
   public-safety markers, including URLs hidden by JSON string escapes. URL
   validation rejects private, loopback, link-local, and unspecified hosts,
   including decimal, hexadecimal, dotted octal, and abbreviated IPv4 forms,
-  `localhost` and its subdomains,
+  `localhost` and its subdomains, and link-local `.local` names,
   as well as hostnames containing `internal`, `intranet`, or `corp` markers.
 
 ## Supported Item Kinds

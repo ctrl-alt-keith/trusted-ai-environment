@@ -97,7 +97,9 @@ def contains_internal_url(text: str) -> bool:
                 hostname = None
             if hostname:
                 decoded_host = unquote(hostname).lower().rstrip(".")
-                if decoded_host == "localhost" or decoded_host.endswith(".localhost"):
+                if decoded_host in {"localhost", "local"} or decoded_host.endswith(
+                    (".localhost", ".local")
+                ):
                     return True
                 parsed_ip = _host_ip(hostname)
                 if parsed_ip and (
