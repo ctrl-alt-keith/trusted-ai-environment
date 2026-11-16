@@ -417,6 +417,8 @@ class BundleValidationTests(unittest.TestCase):
             "http://service.localhost/private",
             "http://local%68ost/private",
             "http://localhost./private",
+            "http://printer.local/private",
+            "http://LOCAL./private",
             "http://127.0.0.2/private",
             "http://0.0.0.0/private",
             "http://169.254.169.254/latest/meta-data",
@@ -441,6 +443,9 @@ class BundleValidationTests(unittest.TestCase):
                 errors = validate_bundle(bundle_dir)
 
                 self.assertIn("sources.jsonl: contains an internal-looking URL", errors)
+
+    def test_public_safety_allows_local_text_outside_local_domain(self) -> None:
+        self.assertFalse(contains_internal_url("https://localization.example.invalid/fake"))
 
     def test_public_safety_detects_alternate_private_ip_forms(self) -> None:
         internal_urls = (
