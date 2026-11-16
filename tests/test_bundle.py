@@ -444,6 +444,9 @@ class BundleValidationTests(unittest.TestCase):
 
                 self.assertIn("sources.jsonl: contains an internal-looking URL", errors)
 
+    def test_public_safety_allows_local_text_outside_local_domain(self) -> None:
+        self.assertFalse(contains_internal_url("https://localization.example.invalid/fake"))
+
     def test_public_safety_detects_alternate_private_ip_forms(self) -> None:
         internal_urls = (
             "http://2130706433/private",
